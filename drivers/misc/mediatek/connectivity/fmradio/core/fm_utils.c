@@ -393,20 +393,20 @@ fm_s32 fm_spin_lock_put(struct fm_lock *thiz)
  * fm timer
  *
  */
-static fm_s32 fm_timer_init(struct fm_timer *thiz, void (*timeout) (unsigned long data),
-			    unsigned long data, signed long time, fm_s32 flag)
+static fm_s32 fm_timer_init(struct fm_timer *thiz, void (*timeout) (struct timer_list *t),
+			    struct timer_list *t, signed long time, fm_s32 flag)
 {
 	struct timer_list *timerlist = (struct timer_list *)thiz->priv;
 
 	thiz->flag = flag;
 	thiz->flag &= ~FM_TIMER_FLAG_ACTIVATED;
 	thiz->timeout_func = timeout;
-	thiz->data = data;
+	//thiz->data = data;
 	thiz->timeout_ms = time;
 
 	timerlist->expires = jiffies + (thiz->timeout_ms) / (1000 / HZ);
 	timerlist->function = thiz->timeout_func;
-	timerlist->data = (unsigned long)thiz->data;
+	//timerlist->data = (unsigned long)thiz->;
 
 	return 0;
 }
@@ -467,7 +467,7 @@ struct fm_timer *fm_timer_create(const fm_s8 *name)
 		return NULL;
 	}
 
-	init_timer(timerlist);
+	timer_setup(timerlist,NULL,0);
 
 	fm_memcpy(tmp->name, name, (strlen(name) > FM_NAME_MAX) ? (FM_NAME_MAX) : (strlen(name)));
 	tmp->priv = timerlist;
@@ -519,7 +519,7 @@ static fm_s32 fm_work_init(struct fm_work *thiz, void (*work_func) (unsigned lon
 	work_func_t func;
 
 	thiz->work_func = work_func;
-	thiz->data = data;
+	//thiz->data = data;
 	func = (work_func_t) thiz->work_func;
 
 	INIT_WORK(sys_work, func);

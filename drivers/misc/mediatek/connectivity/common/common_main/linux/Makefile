@@ -26,6 +26,6 @@ obj-y += stp_btif.o
 endif
 
 obj-$(CONFIG_MTK_COMBO_BT) += stp_chrdev_bt.o
-obj-$(CONFIG_MTK_COMBO_WIFI) += wmt_chrdev_wifi.o
+#obj-$(CONFIG_MTK_COMBO_WIFI) += wmt_chrdev_wifi.o
 
 endif

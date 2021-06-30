@@ -14,7 +14,7 @@
 #include "stp_dbg.h"
 #include "stp_dbg_combo.h"
 
-//static _osal_inline_ INT32 stp_dbg_combo_put_dump_to_aee(VOID);
+static _osal_inline_ INT32 stp_dbg_combo_put_dump_to_aee(VOID);
 static _osal_inline_ INT32 stp_dbg_combo_put_dump_to_nl(VOID);
 
 static PUINT8 combo_task_str[COMBO_TASK_ID_INDX_MAX][COMBO_GEN3_TASK_ID_MAX] = {
@@ -41,7 +41,7 @@ static PUINT8 combo_task_str[COMBO_TASK_ID_INDX_MAX][COMBO_GEN3_TASK_ID_MAX] = {
 	"Task_NatBt"},
 };
 
-/*static _osal_inline_ INT32 stp_dbg_combo_put_dump_to_aee(VOID)
+static _osal_inline_ INT32 stp_dbg_combo_put_dump_to_aee(VOID)
 {
 	static UINT8 buf[2048];
 	static UINT8 tmp[2048];
@@ -85,7 +85,7 @@ static PUINT8 combo_task_str[COMBO_TASK_ID_INDX_MAX][COMBO_GEN3_TASK_ID_MAX] = {
 
 	return ret;
 }
-*/
+
 static _osal_inline_ INT32 stp_dbg_combo_put_dump_to_nl(VOID)
 {
 #define NUM_FETCH_ENTRY 8
@@ -157,6 +157,9 @@ INT32 stp_dbg_combo_core_dump(INT32 dump_sink)
 		STP_DBG_INFO_FUNC("coredump is disabled!\n");
 		break;
 	case 1:
+		ret = stp_dbg_combo_put_dump_to_aee();
+		break;
+	case 2:
 		ret = stp_dbg_combo_put_dump_to_nl();
 		break;
 	default:

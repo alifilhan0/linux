@@ -255,8 +255,8 @@ struct fm_timer {
 	void *priv;		/* platform detail impliment */
 
 	fm_s32 flag;		/* timer active/inactive */
-	void (*timeout_func)(unsigned long data);	/* timeout function */
-	unsigned long data;	/* timeout function's parameter */
+	void (*timeout_func)(struct timer_list *t);	/* timeout function */
+	struct timer_list *t;	/* timeout function's parameter */
 	signed long timeout_ms;	/* timeout tick */
 	/* Tx parameters */
 	volatile fm_u32 count;
@@ -265,8 +265,8 @@ struct fm_timer {
 	volatile fm_u8 tx_desense_en;
 
 	/* timer methods */
-	fm_s32 (*init)(struct fm_timer *thiz, void (*timeout) (unsigned long data),
-		unsigned long data, signed long time, fm_s32 flag);
+	fm_s32 (*init)(struct fm_timer *thiz, void (*timeout) (struct timer_list *t),
+		struct timer_list *t, signed long time, fm_s32 flag);
 	fm_s32 (*start)(struct fm_timer *thiz);
 	fm_s32 (*update)(struct fm_timer *thiz);
 	fm_s32 (*stop)(struct fm_timer *thiz);

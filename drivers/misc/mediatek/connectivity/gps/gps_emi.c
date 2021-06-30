@@ -28,7 +28,7 @@
 #include <asm/uaccess.h>
 #include <linux/printk.h>
 #include <linux/version.h>
-#include <asm/memblock.h>
+#include <linux/memblock.h>
 #include <mach/emi_mpu.h>
 #include "gps.h"
 #include <linux/of_device.h>
