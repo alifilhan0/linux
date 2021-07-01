@@ -16,7 +16,7 @@
 #include <linux/version.h>
 #include <linux/interrupt.h>
 #include <linux/wait.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/semaphore.h>
 #include <linux/timer.h>
 #include <linux/delay.h>
@@ -393,8 +393,8 @@ fm_s32 fm_spin_lock_put(struct fm_lock *thiz)
  * fm timer
  *
  */
-static fm_s32 fm_timer_init(struct fm_timer *thiz, void (*timeout) (struct timer_list *t),
-			    struct timer_list *t, signed long time, fm_s32 flag)
+static fm_s32 fm_timer_init(struct fm_timer *thiz, void (*timeout) (unsigned long data),
+			    unsigned long data, signed long time, fm_s32 flag)
 {
 	struct timer_list *timerlist = (struct timer_list *)thiz->priv;
 
@@ -403,10 +403,10 @@ static fm_s32 fm_timer_init(struct fm_timer *thiz, void (*timeout) (struct timer
 	thiz->timeout_func = timeout;
 	//thiz->data = data;
 	thiz->timeout_ms = time;
-
+    timer_setup(timerlist,NULL,0);
 	timerlist->expires = jiffies + (thiz->timeout_ms) / (1000 / HZ);
-	timerlist->function = thiz->timeout_func;
-	//timerlist->data = (unsigned long)thiz->;
+	//timerlist->function = thiz->timeout_func;
+	//timerlist->data = (unsigned long)thiz->data;
 
 	return 0;
 }
@@ -467,8 +467,8 @@ struct fm_timer *fm_timer_create(const fm_s8 *name)
 		return NULL;
 	}
 
-	timer_setup(timerlist,NULL,0);
-
+	//init_timer(timerlist);
+    timer_setup(timerlist,NULL,0);
 	fm_memcpy(tmp->name, name, (strlen(name) > FM_NAME_MAX) ? (FM_NAME_MAX) : (strlen(name)));
 	tmp->priv = timerlist;
 	tmp->ref = 0;
@@ -519,7 +519,7 @@ static fm_s32 fm_work_init(struct fm_work *thiz, void (*work_func) (unsigned lon
 	work_func_t func;
 
 	thiz->work_func = work_func;
-	//thiz->data = data;
+	thiz->data = data;
 	func = (work_func_t) thiz->work_func;
 
 	INIT_WORK(sys_work, func);

@@ -75,7 +75,7 @@ static fm_u16 fm_cur_freq_get(void);
 static fm_s32 fm_cur_freq_set(fm_u16 new_freq);
 static enum fm_op_state fm_op_state_get(struct fm *fmp);
 static enum fm_op_state fm_op_state_set(struct fm *fmp, enum fm_op_state sta);
-static void fm_timer_func(struct timer_list *t);
+static void fm_timer_func(unsigned long data);
 static void fm_enable_rds_BlerCheck(struct fm *fm);
 static void fm_disable_rds_BlerCheck(void);
 static void fm_rds_reset_work_func(unsigned long data);
@@ -1768,7 +1768,7 @@ fm_s32 fm_rdstx_enable(struct fm *fm, fm_s32 enable)
 	return 0;
 }
 
-static void fm_timer_func(struct timer_list *t)
+static void fm_timer_func(unsigned long data)
 {
 	struct fm *fm = g_fm_struct;
 

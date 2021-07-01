@@ -580,7 +580,6 @@ INT32 mtk_wcn_consys_hw_rst(UINT32 co_clock_type)
 	WMT_PLAT_INFO_FUNC("CONSYS-HW, hw_rst finish, eirq should be enabled after this step\n");
 	return iRet;
 }
-
 #if CONSYS_BT_WIFI_SHARE_V33
 INT32 mtk_wcn_consys_hw_bt_paldo_ctrl(UINT32 enable)
 {
@@ -625,36 +624,44 @@ INT32 mtk_wcn_consys_hw_bt_paldo_ctrl(UINT32 enable)
 	return 0;
 }
 
+INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable)
+{
+	mtk_wcn_consys_hw_bt_paldo_ctrl(enable);
+	return 0;
+}
+
+#else
 INT32 mtk_wcn_consys_hw_bt_paldo_ctrl(UINT32 enable)
 {
 
 	if (enable) {
 		/*do BT PMIC on,depenency PMIC API ready */
 		/*switch BT PALDO control from SW mode to HW mode:0x416[5]-->0x1 */
+		/* VOL_DEFAULT, VOL_3300, VOL_3400, VOL_3500, VOL_3600 */
+
 		if (reg_VCN33_BT) {
 			regulator_set_voltage(reg_VCN33_BT, 3300000, 3300000);
 			if (regulator_enable(reg_VCN33_BT))
 				WMT_PLAT_ERR_FUNC("WMT do BT PMIC on fail!\n");
 		}
 		regmap_update_bits(pmic_regmap, 0x416, 0x1 << 5, 0x1 << 5);/*BT*/
+
+
 		WMT_PLAT_INFO_FUNC("WMT do BT PMIC on\n");
 	} else {
 		/*do BT PMIC off */
 		/*switch BT PALDO control from HW mode to SW mode:0x416[5]-->0x0 */
+
 		regmap_update_bits(pmic_regmap, 0x416, 0x1 << 5, 0x0 << 5);/*BT*/
+
 		if (reg_VCN33_BT)
-			if (regulator_disable(reg_VCN33_BT))
-				WMT_PLAT_ERR_FUNC("WMT do BT PMIC off fail!\n");
+			regulator_disable(reg_VCN33_BT);
+
 		WMT_PLAT_INFO_FUNC("WMT do BT PMIC off\n");
 	}
 
 	return 0;
 
-}
-INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable)
-{
-        mtk_wcn_consys_hw_bt_paldo_ctrl(enable);
-        return 0;
 }
 
 INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable)
@@ -663,26 +670,28 @@ INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable)
 	if (enable) {
 		/*do WIFI PMIC on,depenency PMIC API ready */
 		/*switch WIFI PALDO control from SW mode to HW mode:0x418[14]-->0x1 */
+
 		if (reg_VCN33_WIFI) {
 			regulator_set_voltage(reg_VCN33_WIFI, 3300000, 3300000);
 			if (regulator_enable(reg_VCN33_WIFI))
 				WMT_PLAT_ERR_FUNC("WMT do WIFI PMIC on fail!\n");
-			else
-				WMT_PLAT_INFO_FUNC("WMT do WIFI PMIC on !\n");
 		}
+
 		regmap_update_bits(pmic_regmap, 0x418, 0x1 << 14, 0x1 << 14);/*WIFI*/
+
 		WMT_PLAT_INFO_FUNC("WMT do WIFI PMIC on\n");
 	} else {
 		/*do WIFI PMIC off */
 		/*switch WIFI PALDO control from HW mode to SW mode:0x418[14]-->0x0 */
+
 		regmap_update_bits(pmic_regmap, 0x418, 0x1 << 14, 0x0 << 14);/*WIFI*/
 		if (reg_VCN33_WIFI)
-			if (regulator_disable(reg_VCN33_WIFI))
-				WMT_PLAT_ERR_FUNC("WMT do WIFI PMIC off fail!\n");
+			regulator_disable(reg_VCN33_WIFI);
 		WMT_PLAT_INFO_FUNC("WMT do WIFI PMIC off\n");
 	}
 
 	return 0;
+
 }
 
 #endif
@@ -698,16 +707,17 @@ INT32 mtk_wcn_consys_hw_vcn28_ctrl(UINT32 enable)
 			if (regulator_enable(reg_VCN28))
 				WMT_PLAT_ERR_FUNC("WMT do VCN28 PMIC on fail!\n");
 		}
+
 		WMT_PLAT_INFO_FUNC("turn on vcn28 for fm/gps usage in co-clock mode\n");
 	} else {
 		/*in co-clock mode,need to turn off vcn28 when fm off */
 		if (reg_VCN28)
-			if (regulator_disable(reg_VCN28))
-				WMT_PLAT_ERR_FUNC("WMT do VCN28 PMIC off fail!\n");
+			regulator_disable(reg_VCN28);
 		WMT_PLAT_INFO_FUNC("turn off vcn28 for fm/gps usage in co-clock mode\n");
 	}
 	return 0;
 }
+
 INT32 mtk_wcn_consys_hw_state_show(VOID)
 {
 	return 0;
@@ -719,7 +729,6 @@ INT32 mtk_wcn_consys_hw_restore(struct device *device)
 
 	if (gConEmiPhyBase) {
 
-#if CONSYS_EMI_MPU_SETTING
 		/*set MPU for EMI share Memory */
 		WMT_PLAT_INFO_FUNC("setting MPU for EMI share memory\n");
 
@@ -747,7 +756,6 @@ INT32 mtk_wcn_consys_hw_restore(struct device *device)
 		WMT_PLAT_WARN_FUNC("not define platform config\n");
 #endif
 
-#endif
 		/*consys to ap emi remapping register:10000320, cal remapping address */
 		addrPhy = (gConEmiPhyBase & 0xFFF00000) >> 20;
 
@@ -810,7 +818,6 @@ INT32 mtk_wcn_consys_hw_init(void)
 	}
 
 	if (gConEmiPhyBase) {
-#if CONSYS_EMI_MPU_SETTING
 		/*set MPU for EMI share Memory */
 		WMT_PLAT_INFO_FUNC("setting MPU for EMI share memory\n");
 
@@ -837,9 +844,7 @@ INT32 mtk_wcn_consys_hw_init(void)
 #else
 		WMT_PLAT_WARN_FUNC("not define platform config\n");
 #endif
-
-#endif
-		WMT_PLAT_DBG_FUNC("get consys start phy address(0x%zx)\n", (SIZE_T) gConEmiPhyBase);
+        WMT_PLAT_DBG_FUNC("get consys start phy address(0x%zx)\n", (SIZE_T) gConEmiPhyBase);
 
 		/*consys to ap emi remapping register:10000320, cal remapping address */
 		addrPhy = (gConEmiPhyBase & 0xFFF00000) >> 20;
