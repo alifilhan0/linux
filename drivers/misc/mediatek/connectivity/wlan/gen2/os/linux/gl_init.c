@@ -2975,8 +2975,8 @@ static int initWlan(void)
 #endif
 
 	/* Register framebuffer notifier client*/
-	if (gprWdev)
-		kalFbNotifierReg((P_GLUE_INFO_T) wiphy_priv(gprWdev->wiphy));
+	/*if (gprWdev)
+		kalFbNotifierReg((P_GLUE_INFO_T) wiphy_priv(gprWdev->wiphy));*/
 
 	/* Set the initial DEBUG CLASS of each module */
 	return ret;
@@ -2997,7 +2997,7 @@ static VOID exitWlan(void)
 	DBGLOG(INIT, INFO, "exitWlan\n");
 
 	/* Unregister framebuffer notifier client*/
-	kalFbNotifierUnReg();
+	/*kalFbNotifierUnReg();*/
 
 #if CFG_CHIP_RESET_SUPPORT
 	glResetUninit();

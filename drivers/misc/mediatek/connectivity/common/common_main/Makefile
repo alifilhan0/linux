@@ -10,9 +10,9 @@ subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eccci/$(MTK_PLATFORM)
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eemcs/
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/conn_md/include
 
-subdir-ccflags-y += -D WMT_PLAT_ALPS=1
-subdir-ccflags-y += -D WMT_UART_RX_MODE_WORK=0 # 1. work thread 0. tasklet
-subdir-ccflags-y += -D WMT_SDIO_MODE=1
+
+subdir-ccflags-y += -DWMT_UART_RX_MODE_WORK=0 # 1. work thread 0. tasklet
+subdir-ccflags-y += -DWMT_SDIO_MODE=1
 ccflags-y += -DWMT_CREATE_NODE_DYNAMIC=1
 
 EXT_FLAG=_soc
@@ -20,7 +20,7 @@ COMMON_SRC_PATH := $(srctree)/drivers/misc/mediatek/connectivity/common/common_m
 COMMON_OBJ_PATH := $(srctree)/drivers/misc/mediatek/connectivity/common/common_main/
 
 ifeq ($(CONFIG_ARCH_MT6580), y)
-subdir-ccflags-y += -D CFG_WMT_READ_EFUSE_VCN33
+subdir-ccflags-y += -DCFG_WMT_READ_EFUSE_VCN33
 endif
 
 ifeq ($(CONFIG_MTK_COMBO), m)
@@ -45,7 +45,7 @@ mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/stp_btif.o
 mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/osal.o \
                                    linux/bgw_desense.o
 # WMT DRIVER-platform implementation
-mtk_stp_wmt$(EXT_FLAG)-objs += platform/alps/wmt_plat_alps.o
+mtk_stp_wmt$(EXT_FLAG)-objs += mt6735/wmt_plat_alps.o
 
 mtk_stp_wmt$(EXT_FLAG)-objs += mt6735/mtk_wcn_consys_hw.o
 
@@ -57,7 +57,7 @@ mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o \
                                    linux/stp_dbg.o
 
 # WMT stub part (built-in kernel image)
-obj-y			+= platform/alps/mtk_wcn_consys_stub_alps.o
+#obj-y			+= platform/alps/mtk_wcn_consys_stub_alps.o
 
 
 

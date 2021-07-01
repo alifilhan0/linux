@@ -681,7 +681,7 @@ static _osal_inline_ UINT32 stp_dbg_get_chip_id(VOID)
  *
  * Retunr 0 if success
  */
-INT32 stp_dbg_trigger_collect_ftrace(PUINT8 pbuf, INT32 len)
+/*INT32 stp_dbg_trigger_collect_ftrace(PUINT8 pbuf, INT32 len)
 {
 	if (!pbuf)
 		STP_DBG_ERR_FUNC("Parameter error\n");
@@ -695,7 +695,7 @@ INT32 stp_dbg_trigger_collect_ftrace(PUINT8 pbuf, INT32 len)
 	}
 
 	return 0;
-}
+}*/
 
 #if BTIF_RXD_BE_BLOCKED_DETECT
 MTK_WCN_BOOL stp_dbg_is_btif_rxd_be_blocked(VOID)

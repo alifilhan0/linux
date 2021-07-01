@@ -535,20 +535,6 @@ INT32 wmt_lib_set_patch_name(PUINT8 cPatchName)
 	return 0;
 }
 
-INT32 wmt_lib_set_uart_name(PINT8 cUartName)
-{
-#if WMT_PLAT_ALPS
-
-	WMT_DBG_FUNC("orig uart: %s\n", wmt_uart_port_desc);
-#endif
-	osal_strncpy(gDevWmt.cUartName, cUartName, NAME_MAX);
-#if WMT_PLAT_ALPS
-	wmt_uart_port_desc = gDevWmt.cUartName;
-	WMT_DBG_FUNC("new uart: %s\n", wmt_uart_port_desc);
-#endif
-	return 0;
-}
-
 INT32 wmt_lib_set_hif(ULONG hifconf)
 {
 	UINT32 val;
@@ -1252,7 +1238,7 @@ MTK_WCN_BOOL wmt_lib_put_act_op(P_OSAL_OP pOp)
 			/* TODO: how to handle it? retry? */
 			/* wcn_wmtd_timeout_collect_ftrace();*/ /*trigger collect SYS_FTRACE */
 			osal_thread_show_stack(pThread);
-			stp_dbg_trigger_collect_ftrace(pbuf, len);
+			//stp_dbg_trigger_collect_ftrace(pbuf, len);
 		} else {
 			if (pOp->result)
 				WMT_WARN_FUNC("opId(%d) result:%d\n", pOp->op.opId, pOp->result);
@@ -2092,21 +2078,20 @@ INT32 wmt_lib_poll_cpupcr(UINT32 count, UINT16 sleep, UINT16 toAee)
 	return 0;
 }
 
-
 INT32 wmt_lib_merge_if_flag_ctrl(UINT32 enable)
 {
-#if WMT_PLAT_ALPS
-	return wmt_plat_merge_if_flag_ctrl(enable);
-#endif
+        return wmt_plat_merge_if_flag_ctrl(enable);
 }
 
 
 INT32 wmt_lib_merge_if_flag_get(UINT32 enable)
 {
-#if WMT_PLAT_ALPS
-	return wmt_plat_merge_if_flag_get();
-#endif
+        return wmt_plat_merge_if_flag_get();
 }
+
+
+
+
 
 
 PUINT8 wmt_lib_get_cpupcr_xml_format(PUINT32 len)

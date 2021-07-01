@@ -188,15 +188,7 @@ typedef enum {
 ********************************************************************************
 */
 
-#if WMT_PLAT_ALPS
-#ifdef CONFIG_SDIOAUTOK_SUPPORT
-#define MTK_HIF_SDIO_AUTOK_ENABLED 1
-#else
 #define MTK_HIF_SDIO_AUTOK_ENABLED 0
-#endif
-#else
-#define MTK_HIF_SDIO_AUTOK_ENABLED 0
-#endif
 
 /*!
  * \brief A macro used to generate hif_sdio client's context

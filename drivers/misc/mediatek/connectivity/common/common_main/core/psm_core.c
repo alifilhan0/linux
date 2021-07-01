@@ -962,7 +962,7 @@ static inline INT32 _stp_psm_wait_wmt_event_wq(MTKSTP_PSM_T *stp_psm)
 		/* wcn_psm_flag_trigger_collect_ftrace(); */	/* trigger collect SYS_FTRACE */
 		pbuf = "Abnormal PSM flag be set, just collect SYS_FTRACE to DB";
 		len = osal_strlen(pbuf);
-		stp_dbg_trigger_collect_ftrace(pbuf, len);
+		//stp_dbg_trigger_collect_ftrace(pbuf, len);
 		_stp_psm_dbg_out_printk(g_stp_psm_dbg);
 	}
 	retval = STP_PSM_OPERATION_SUCCESS;

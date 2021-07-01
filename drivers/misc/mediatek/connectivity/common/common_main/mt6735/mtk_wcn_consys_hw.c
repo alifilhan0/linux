@@ -651,6 +651,11 @@ INT32 mtk_wcn_consys_hw_bt_paldo_ctrl(UINT32 enable)
 	return 0;
 
 }
+INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable)
+{
+        mtk_wcn_consys_hw_bt_paldo_ctrl(enable);
+        return 0;
+}
 
 INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable)
 {
