@@ -25,7 +25,9 @@ endif
 ccflags-y += \
 	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/include \
 	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include \
-	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/core/include
+	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/core/include \
+	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/mt6735/include \
+	-I$(srctree)/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach
 
 obj-$(CONFIG_MTK_COMBO_GPS)	+= stp_chrdev_gps.o
 obj-$(CONFIG_MTK_GPS)		+= gps.o

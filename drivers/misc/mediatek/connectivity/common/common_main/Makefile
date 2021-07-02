@@ -49,7 +49,6 @@ mtk_stp_wmt$(EXT_FLAG)-objs += mt6735/wmt_plat_alps.o
 
 mtk_stp_wmt$(EXT_FLAG)-objs += mt6735/mtk_wcn_consys_hw.o
 
-
 mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o \
                                    core/stp_core.o \
                                    core/psm_core.o \
@@ -57,7 +56,6 @@ mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o \
                                    linux/stp_dbg.o
 
 # WMT stub part (built-in kernel image)
-#obj-y			+= platform/alps/mtk_wcn_consys_stub_alps.o
 
 
 

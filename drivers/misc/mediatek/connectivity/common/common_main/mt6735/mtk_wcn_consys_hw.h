@@ -38,11 +38,11 @@
 */
 #define CONSYS_BT_WIFI_SHARE_V33        0
 #define CONSYS_PMIC_CTRL_ENABLE         1
-#define CONSYS_EMI_MPU_SETTING          1
+#define CONSYS_EMI_MPU_SETTING          0
 #define CONSYS_AHB_CLK_MAGEMENT         1
 #define CONSYS_USE_PLATFORM_WRITE       1
-#define CONSYS_PWR_ON_OFF_API_AVAILABLE 1
-#define CONSYS_CLOCK_BUF_CTRL           1
+#define CONSYS_PWR_ON_OFF_API_AVAILABLE 0
+#define CONSYS_CLOCK_BUF_CTRL           0
 #if defined(CONFIG_MTK_LEGACY)
 #define CONFIG_MTK_PMIC_LEGACY			1
 #endif

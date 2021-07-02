@@ -72,7 +72,7 @@ typedef unsigned char   UINT8, *PUINT8, **PPUINT8;
 phys_addr_t gGpsEmiPhyBase;
 UINT8 __iomem *pGpsEmibaseaddr = NULL;
 struct gps_emi_dev *devobj = NULL;
-#define EMI_MPU_PROTECTION_IS_READY 1
+#define EMI_MPU_PROTECTION_IS_READY 0
 
 void mtk_wcn_consys_gps_memory_reserve(void)
 {
