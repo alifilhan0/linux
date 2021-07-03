@@ -566,9 +566,9 @@ int send_new_time_to_md(struct ccci_modem *md, int tz)
 	ipc_ilm_t in_ilm;
 	char local_param[sizeof(local_para_struct) + 16];
 	unsigned int timeinfo[4];
-	struct timeval tv = { 0 };
+	struct timespec64 tv = { 0 };
 
-	do_gettimeofday(&tv);
+	ktime_get_real_ts64(&tv);
 
 	timeinfo[0] = tv.tv_sec;
 	timeinfo[1] = sizeof(tv.tv_sec) > 4 ? tv.tv_sec >> 32 : 0;

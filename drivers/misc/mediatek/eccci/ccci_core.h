@@ -21,7 +21,6 @@
 #include <linux/ktime.h>
 #include <linux/netdevice.h>
 #include <linux/platform_device.h>
-#include <linux/wakelock.h>
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <mt-plat/mt_ccci_common.h>

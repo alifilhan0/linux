@@ -2959,7 +2959,7 @@ static int md_cd_send_runtime_data(struct ccci_modem *md, unsigned int tx_ch, un
 #endif
 
 #ifdef FEATURE_MD_GET_CLIB_TIME
-	struct timeval t;
+	struct timespec64 t;
 #endif
 
 	if (md->runtime_version == AP_MD_HS_V2) {
@@ -3065,7 +3065,7 @@ static int md_cd_send_runtime_data(struct ccci_modem *md, unsigned int tx_ch, un
 	CCCI_DEBUG_LOG(md->index, TAG, "FEATURE_MD_GET_CLIB_TIME is on\n");
 	runtime->support_mask |= (FEATURE_SUPPORT << (MISC_MD_CLIB_TIME * 2));
 
-	do_gettimeofday(&t);
+	ktime_get_real_ts64(&t);
 
 	/* set seconds information */
 	runtime->feature_6_val[0] = ((unsigned int *)&t.tv_sec)[0];

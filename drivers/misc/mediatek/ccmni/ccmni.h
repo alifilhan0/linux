@@ -21,7 +21,6 @@
 #include <linux/etherdevice.h>
 #include <linux/skbuff.h>
 #include <linux/bitops.h>
-#include <linux/wakelock.h>
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/delay.h>
@@ -100,7 +99,7 @@ typedef struct ccmni_ctl_block {
 	ccmni_ccci_ops_t   *ccci_ops;
 	ccmni_instance_t   *ccmni_inst[32];
 	unsigned int       md_sta;
-	struct wake_lock   ccmni_wakelock;
+	struct wakeup_source   *ccmni_wakelock;
 	char               wakelock_name[16];
 	unsigned long long net_rx_delay[4];
 } ccmni_ctl_block_t;

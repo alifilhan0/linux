@@ -1004,7 +1004,6 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 	P_BSS_DESC_T prBssDesc = NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	kalMemZero(arBssid, MAC_ADDR_LEN);
 
 	ASSERT(prGlueInfo);
@@ -1803,7 +1802,7 @@ kalIoctl(IN P_GLUE_INFO_T prGlueInfo,
 	if (fgIsResetting == TRUE)
 		return WLAN_STATUS_SUCCESS;
 
-	/* GLUE_SPIN_LOCK_DECLARATION(); */
+	/* unsigned long __u4FLags = 0; */
 	ASSERT(prGlueInfo);
 
 	/* <1> Check if driver is halt */
@@ -1920,7 +1919,6 @@ VOID kalClearSecurityFrames(IN P_GLUE_INFO_T prGlueInfo)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	/* Clear pending security frames in prGlueInfo->rCmdQueue */
@@ -1968,7 +1966,6 @@ VOID kalClearSecurityFramesByNetType(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_NETWOR
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	/* Clear pending security frames in prGlueInfo->rCmdQueue */
@@ -2013,7 +2010,6 @@ VOID kalClearMgmtFrames(IN P_GLUE_INFO_T prGlueInfo)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	/* Clear pending management frames in prGlueInfo->rCmdQueue */
@@ -2058,7 +2054,6 @@ VOID kalClearMgmtFramesByNetType(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_NETWORK_TY
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	/* Clear pending management frames in prGlueInfo->rCmdQueue */
@@ -2118,7 +2113,6 @@ int tx_thread(void *data)
 
 	/* for spin lock acquire and release */
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	prTxQueue = &prGlueInfo->rTxQueue;
 	prCmdQue = &prGlueInfo->rCmdQueue;
 
@@ -2473,7 +2467,6 @@ VOID kalFlushPendingTxPackets(IN P_GLUE_INFO_T prGlueInfo)
 	PVOID prPacket;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	prTxQue = &(prGlueInfo->rTxQueue);
@@ -2543,7 +2536,6 @@ VOID kalOidCmdClearance(IN P_GLUE_INFO_T prGlueInfo)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	prCmdQue = &prGlueInfo->rCmdQueue;
@@ -2594,7 +2586,6 @@ VOID kalEnqueueCommand(IN P_GLUE_INFO_T prGlueInfo, IN P_QUE_ENTRY_T prQueueEntr
 	P_MSDU_INFO_T prMsduInfo;
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 	ASSERT(prQueueEntry);
 
@@ -3996,7 +3987,6 @@ VOID kalSchedScanResults(IN P_GLUE_INFO_T prGlueInfo)
 VOID kalSchedScanStopped(IN P_GLUE_INFO_T prGlueInfo)
 {
 	GLUE_SPIN_LOCK_DECLARATION();
-
 	ASSERT(prGlueInfo);
 
 	/* 1. reset first for newly incoming request */

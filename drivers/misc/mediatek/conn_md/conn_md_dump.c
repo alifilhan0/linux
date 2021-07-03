@@ -52,11 +52,11 @@ int conn_md_dmp_deinit(P_CONN_MD_DMP_MSG_LOG p_log)
 
 int __conn_md_dmp_in(ipc_ilm_t *p_ilm, CONN_MD_MSG_TYPE msg_type, P_CONN_MD_DMP_MSG_LOG p_msg_log)
 {
-	struct timeval now;
+	struct timespec64 now;
 	P_CONN_MD_DMP_MSG_STR p_msg = NULL;
 
 	/*get current time */
-	do_gettimeofday(&now);
+	ktime_get_real_ts64(&now);
 
 	mutex_lock(&p_msg_log->lock);
 

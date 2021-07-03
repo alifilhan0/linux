@@ -107,12 +107,12 @@ static void mdee_dumper_info_dump_v1(struct md_ee *mdee)
 	int md_state = ccci_md_get_state(mdee->md_obj);
 	struct ccci_smem_layout *smem_layout = ccci_md_get_smem(mdee->md_obj);
 	struct rtc_time tm;
-	struct timeval tv = { 0 };
-	struct timeval tv_android = { 0 };
+	struct timespec64 tv = { 0 };
+	struct timespec64 tv_android = { 0 };
 	struct rtc_time tm_android;
 	int md_dbg_dump_flag = ccci_md_get_dbg_dump_flag(mdee->md_obj);
 
-	do_gettimeofday(&tv);
+	ktime_get_real_ts64(&tv);
 	tv_android = tv;
 	rtc_time_to_tm(tv.tv_sec, &tm);
 	tv_android.tv_sec -= sys_tz.tz_minuteswest * 60;

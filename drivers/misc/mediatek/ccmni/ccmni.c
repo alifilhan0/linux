@@ -556,9 +556,9 @@ static int ccmni_napi_poll(struct napi_struct *napi, int budget)
 		return 0;
 }
 
-static void ccmni_napi_poll_timeout(unsigned long data)
+static void ccmni_napi_poll_timeout(struct timer_list *t)
 {
-	ccmni_instance_t *ccmni = (ccmni_instance_t *)data;
+	ccmni_instance_t *ccmni = from_timer(ccmni_instance_t *);
 
 	CCMNI_ERR_MSG(ccmni->md_id, "CCMNI%d lost NAPI polling\n", ccmni->index);
 }
@@ -584,9 +584,9 @@ static inline int ccmni_inst_init(int md_id, ccmni_instance_t *ccmni, struct net
 
 	/* register napi device */
 	if (dev && (ctlb->ccci_ops->md_ability & MODEM_CAP_NAPI)) {
-		init_timer(ccmni->timer);
-		ccmni->timer->function = ccmni_napi_poll_timeout;
-		ccmni->timer->data = (unsigned long)ccmni;
+		timer_setup(ccmni->timer,ccmni_napi_poll_timeout,0);
+		//ccmni->timer->function = ccmni_napi_poll_timeout;
+		//ccmni->timer->data = (unsigned long)ccmni;
 		netif_napi_add(dev, ccmni->napi, ccmni_napi_poll, ctlb->ccci_ops->napi_poll_weigh);
 	}
 #ifdef ENABLE_WQ_GRO
@@ -757,7 +757,9 @@ static int ccmni_init(int md_id, ccmni_ccci_ops_t *ccci_info)
 	}
 
 	snprintf(ctlb->wakelock_name, sizeof(ctlb->wakelock_name), "ccmni_md%d", (md_id+1));
-	wake_lock_init(&ctlb->ccmni_wakelock, WAKE_LOCK_SUSPEND, ctlb->wakelock_name);
+	//wake_lock_init(&ctlb->ccmni_wakelock, WAKE_LOCK_SUSPEND, ctlb->wakelock_name);
+    if((ctlb->ccmni_wakelock = wakeup_source_create(ctlb->wakelock_name)))
+        wakeup_source_add(ctlb->ccmni_wakelock);
 
 	return 0;
 
@@ -884,7 +886,7 @@ static int ccmni_rx_callback(int md_id, int ccmni_idx, struct sk_buff *skb, void
 	dev->stats.rx_packets++;
 	dev->stats.rx_bytes += skb_len;
 
-	wake_lock_timeout(&ctlb->ccmni_wakelock, HZ);
+	__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ));
 
 	return 0;
 }
@@ -931,7 +933,7 @@ static void ccmni_md_state_callback(int md_id, int ccmni_idx, MD_STATE state, in
 	case RX_IRQ:
 		mod_timer(ccmni->timer, jiffies+HZ);
 		napi_schedule(ccmni->napi);
-		wake_lock_timeout(&ctlb->ccmni_wakelock, HZ);
+		__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ));
 		break;
 #ifdef ENABLE_WQ_GRO
 	case RX_FLUSH:

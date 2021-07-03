@@ -29,7 +29,7 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/memblock.h>
-#include <asm/memblock.h>
+#include <linux/memblock.h>
 
 #ifdef CONFIG_OF
 #include <linux/of.h>
@@ -835,7 +835,7 @@ static void lk_info_parsing_v1(unsigned int *raw_ptr)
 	s_g_lk_info_tag_version = 1;
 	s_g_tag_cnt = (unsigned int)lk_inf.lk_info_tag_num;
 
-	s_g_lk_inf_base = ioremap_nocache((phys_addr_t)lk_inf.lk_info_base_addr, MAX_LK_INFO_SIZE);
+	s_g_lk_inf_base = ioremap((phys_addr_t)lk_inf.lk_info_base_addr, MAX_LK_INFO_SIZE);
 	if (s_g_lk_inf_base == NULL) {
 		CCCI_UTIL_ERR_MSG("ioremap lk info buf fail\n");
 		s_g_lk_load_img_status |= LK_LOAD_MD_ERR_NO_MD_LOAD;
@@ -880,7 +880,7 @@ static int lk_info_parsing_v2(unsigned int *raw_ptr)
 	s_g_lk_info_tag_version = (unsigned int)lk_inf.lk_info_version;
 	s_g_tag_cnt = (unsigned int)lk_inf.lk_info_tag_num;
 
-	s_g_lk_inf_base = ioremap_nocache((phys_addr_t)lk_inf.lk_info_base_addr, MAX_LK_INFO_SIZE);
+	s_g_lk_inf_base = ioremap((phys_addr_t)lk_inf.lk_info_base_addr, MAX_LK_INFO_SIZE);
 	if (s_g_lk_inf_base == NULL) {
 		CCCI_UTIL_ERR_MSG("ioremap lk info buf fail\n");
 		s_g_lk_load_img_status |= LK_LOAD_MD_ERR_NO_MD_LOAD;

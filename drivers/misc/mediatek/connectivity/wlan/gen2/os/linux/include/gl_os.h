@@ -735,10 +735,10 @@ struct wpa_driver_hs20_data_s {
 	spin_unlock_bh(prLock)
 
 #else /* !CFG_USE_SPIN_LOCK_BOTTOM_HALF */
-#define GLUE_SPIN_LOCK_DECLARATION();
+#define GLUE_SPIN_LOCK_DECLARATION()
     unsigned long __u4Flags = 0;
 #define GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, rLockCategory)   \
-	{ \
+	{  \
 		if (rLockCategory < SPIN_LOCK_NUM) \
 			spin_lock_irqsave(&(prGlueInfo)->rSpinLock[rLockCategory], __u4Flags); \
 	}

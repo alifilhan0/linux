@@ -605,7 +605,7 @@ int ccci_md_prepare_runtime_data(struct ccci_modem *md, struct sk_buff *skb)
 	struct md_query_ap_feature md_feature_ap;
 	struct ccci_runtime_boot_info boot_info;
 	unsigned int random_seed = 0;
-	struct timeval t;
+	struct timespec64 t;
 #ifdef FEATURE_C2K_ALWAYS_ON
 	unsigned int c2k_flags = 0;
 #endif
@@ -779,7 +779,7 @@ int ccci_md_prepare_runtime_data(struct ccci_modem *md, struct sk_buff *skb)
 				break;
 			case MISC_INFO_CLIB_TIME:
 				rt_feature.data_len = sizeof(struct ccci_misc_info_element);
-				do_gettimeofday(&t);
+				ktime_get_real_ts64(&t);
 
 				/*set seconds information */
 				rt_f_element.feature[0] = ((unsigned int *)&t.tv_sec)[0];

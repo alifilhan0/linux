@@ -17,7 +17,6 @@
 #include <linux/of_fdt.h>
 #include <linux/of_irq.h>
 #include <linux/of_address.h>
-#include <linux/switch.h>
 
 #include <mt-plat/mt_boot_common.h>
 #include "ccci_config.h"

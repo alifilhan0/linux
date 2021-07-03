@@ -435,7 +435,7 @@ static void cmd_process(char cmd[], unsigned long para[], int para_num)
 		CCCI_UTIL_DBG_MSG("Command:%s, Base addr:0x%p\n", cmd, (void *)para[0]);
 		/* Do IO-REMAP here */
 		if (aat_runtime_map_base_vir == NULL) {
-			aat_runtime_map_base_vir = ioremap_nocache((phys_addr_t) para[0], 4096);
+			aat_runtime_map_base_vir = ioremap((phys_addr_t) para[0], 4096);
 			if (aat_runtime_map_base_vir == NULL) {
 				snprintf(aat_err_str, 64, "Map phy addr:0x%p fail\n", (void *)para[0]);
 				aat_err_no = 0x00002100;
