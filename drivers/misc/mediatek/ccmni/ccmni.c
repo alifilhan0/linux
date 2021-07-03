@@ -236,8 +236,7 @@ int ccmni_debug_file_init(int md_id)
 }
 
 /********************netdev register function********************/
-static u16 ccmni_select_queue(struct net_device *dev, struct sk_buff *skb,
-			    void *accel_priv, select_queue_fallback_t fallback)
+static u16 ccmni_select_queue(struct net_device *dev, struct sk_buff *skb, struct net_device *sb_dev)
 {
 	ccmni_instance_t *ccmni = (ccmni_instance_t *)netdev_priv(dev);
 	ccmni_ctl_block_t *ctlb = ccmni_ctl_blk[ccmni->md_id];
@@ -395,7 +394,7 @@ static int ccmni_change_mtu(struct net_device *dev, int new_mtu)
 	return 0;
 }
 
-static void ccmni_tx_timeout(struct net_device *dev)
+static void ccmni_tx_timeout(struct net_device *dev, unsigned int txqueue)
 {
 	ccmni_instance_t *ccmni = (ccmni_instance_t *)netdev_priv(dev);
 
@@ -558,7 +557,7 @@ static int ccmni_napi_poll(struct napi_struct *napi, int budget)
 
 static void ccmni_napi_poll_timeout(struct timer_list *t)
 {
-	ccmni_instance_t *ccmni = from_timer(ccmni_instance_t *);
+	ccmni_instance_t *ccmni = (ccmni_instance_t *)data;
 
 	CCMNI_ERR_MSG(ccmni->md_id, "CCMNI%d lost NAPI polling\n", ccmni->index);
 }
@@ -761,7 +760,8 @@ static int ccmni_init(int md_id, ccmni_ccci_ops_t *ccci_info)
     if((ctlb->ccmni_wakelock = wakeup_source_create(ctlb->wakelock_name)))
         wakeup_source_add(ctlb->ccmni_wakelock);
 
-	return 0;
+
+    return 0;
 
 alloc_netdev_fail:
 	if (dev) {

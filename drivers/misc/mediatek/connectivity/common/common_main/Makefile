@@ -48,7 +48,7 @@ mtk_stp_wmt$(EXT_FLAG)-objs	+= linux/osal.o \
 mtk_stp_wmt$(EXT_FLAG)-objs += mt6735/wmt_plat_alps.o
 
 mtk_stp_wmt$(EXT_FLAG)-objs += mt6735/mtk_wcn_consys_hw.o
-
+endif
 mtk_stp_wmt$(EXT_FLAG)-objs	+= core/stp_exp.o \
                                    core/stp_core.o \
                                    core/psm_core.o \

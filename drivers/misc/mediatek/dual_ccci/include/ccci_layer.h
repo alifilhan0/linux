@@ -42,7 +42,6 @@
 #include <linux/rwlock.h>
 #include <linux/bitops.h>
 #include <linux/sched.h>
-#include <linux/wakelock.h>
 #include "ccci_ch.h"
 #include "ccif.h"
 

@@ -26,7 +26,6 @@
 #endif /*CONFIG_MTK_CLKMGR */
 #include <mt-plat/upmu_common.h>
 #include <mach/mt_pbm.h>
-#include <mt_spm_sleep.h>
 
 
 #include "ccci_modem.h"
