@@ -64,7 +64,7 @@ int __conn_md_dmp_in(ipc_ilm_t *p_ilm, CONN_MD_MSG_TYPE msg_type, P_CONN_MD_DMP_
 
 	/*Log timestamp */
 	p_msg->sec = now.tv_sec;
-	p_msg->usec = now.tv_usec;
+	p_msg->usec = now.tv_nsec/1000;
 	p_msg->type = msg_type;
 
 	/*Log p_ilm */

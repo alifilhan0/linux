@@ -131,6 +131,8 @@ struct ccci_modem {
 	struct work_struct scp_md_state_sync_work;
 #endif
 	struct ccci_fsm_ctl fsm;
+    struct timer_list hs1_polling_timer;
+    struct timer_list traffic_monitor;
 };
 /****************************************************************************************************************/
 /* API Region called by sub-modem class, reuseable API */

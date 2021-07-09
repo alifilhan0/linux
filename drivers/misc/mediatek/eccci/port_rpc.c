@@ -31,9 +31,6 @@
 #include <mach/mt6605.h>
 #endif
 
-#ifdef FEATURE_RF_CLK_BUF
-#include <mt_clkbuf_ctl.h>
-#endif
 
 #include "ccci_core.h"
 #include "ccci_bm.h"
@@ -882,7 +879,7 @@ static void ccci_rpc_work_helper(struct ccci_port *port, struct rpc_pkt *pkt,
 			pkt[pkt_num++].buf = (void *)&tmp_data[0];
 			break;
 		}
-#ifdef FEATURE_RF_CLK_BUF
+/*#ifdef FEATURE_RF_CLK_BUF
 	case IPC_RPC_GET_RF_CLK_BUF_OP:
 		{
 			u16 count = 0;
@@ -974,7 +971,7 @@ static void ccci_rpc_work_helper(struct ccci_port *port, struct rpc_pkt *pkt,
 			CCCI_DEBUG_LOG(md_id, RPC, "IPC_RPC_GET_RF_CLK_BUF count=%x\n", clkbuf->CLKBuf_Count);
 			break;
 		}
-#endif
+#endif*/
 	case IPC_RPC_GET_GPIO_VAL_OP:
 	case IPC_RPC_GET_ADC_VAL_OP:
 		{

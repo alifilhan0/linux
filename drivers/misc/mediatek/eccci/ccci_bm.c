@@ -17,9 +17,9 @@
 #include <linux/delay.h>
 #include <linux/module.h>
 #include <linux/stacktrace.h>
-
-#include <mt-plat/mt_ccci_common.h>
 #include "ccci_config.h"
+#include <mt-plat/mt_ccci_common.h>
+
 #include "ccci_bm.h"
 #ifdef CCCI_BM_TRACE
 #define CREATE_TRACE_POINTS

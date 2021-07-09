@@ -12,7 +12,5 @@
 #
 
 
-obj-$(CONFIG_ODM1_NFC_PN548) += lct_pn548/
 obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
-obj-$(CONFIG_ODM2_NFC_PN548) += pn548/
 subdir-ccflags-y += -Werror -I$(srctree)/drivers/misc/mediatek/base/power/$(MTK_PLATFORM)/

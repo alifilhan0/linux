@@ -205,9 +205,9 @@ static void ccmni_dbg_skb_header(int md_id, bool tx, struct sk_buff *skb)
 /* ccmni debug sys file create */
 int ccmni_debug_file_init(int md_id)
 {
-	int result = -1;
+	//int result = -1;
 	char fname[16];
-	struct dentry *dentry1, *dentry2, *dentry3;
+	struct dentry *dentry1, *dentry2/*, *dentry3*/;
 
 	CCMNI_INF_MSG(md_id, "ccmni_debug_file_init\n");
 
@@ -225,18 +225,19 @@ int ccmni_debug_file_init(int md_id)
 		return -ENOENT;
 	}
 
-	dentry3 = debugfs_create_u32("debug_level", 0600, dentry2, &ccmni_debug_level);
-	result = PTR_ERR(dentry3);
+	debugfs_create_u32("debug_level", 0600, dentry2, &ccmni_debug_level);
+	/*result = PTR_ERR(dentry3);
 	if (IS_ERR(dentry3) && result != -ENODEV) {
 		CCMNI_ERR_MSG(md_id, "create /proc/ccmni/md%d/debug_level fail: %d\n", md_id, result);
 		return -ENOENT;
-	}
+	}*/
 
 	return 0;
 }
 
 /********************netdev register function********************/
-static u16 ccmni_select_queue(struct net_device *dev, struct sk_buff *skb, struct net_device *sb_dev)
+static u16 ccmni_select_queue(struct net_device *dev, struct sk_buff *skb,
+			    struct net_device *sb_dev)
 {
 	ccmni_instance_t *ccmni = (ccmni_instance_t *)netdev_priv(dev);
 	ccmni_ctl_block_t *ctlb = ccmni_ctl_blk[ccmni->md_id];
@@ -547,7 +548,7 @@ static int ccmni_napi_poll(struct napi_struct *napi, int budget)
 	int md_id = ccmni->md_id;
 	ccmni_ctl_block_t *ctlb = ccmni_ctl_blk[md_id];
 
-	del_timer(ccmni->timer);
+	del_timer(&ccmni->timer);
 
 	if (ctlb->ccci_ops->napi_poll)
 		return ctlb->ccci_ops->napi_poll(md_id, ccmni->index, napi, budget);
@@ -557,7 +558,7 @@ static int ccmni_napi_poll(struct napi_struct *napi, int budget)
 
 static void ccmni_napi_poll_timeout(struct timer_list *t)
 {
-	ccmni_instance_t *ccmni = (ccmni_instance_t *)data;
+	ccmni_instance_t *ccmni = from_timer(ccmni, t, timer);
 
 	CCMNI_ERR_MSG(ccmni->md_id, "CCMNI%d lost NAPI polling\n", ccmni->index);
 }
@@ -579,11 +580,11 @@ static inline int ccmni_inst_init(int md_id, ccmni_instance_t *ccmni, struct net
 	ccmni->ctlb = ctlb;
 	ccmni->md_id = md_id;
 	ccmni->napi = kzalloc(sizeof(struct napi_struct), GFP_KERNEL);
-	ccmni->timer = kzalloc(sizeof(struct timer_list), GFP_KERNEL);
+	//ccmni->timer = kzalloc(sizeof(struct timer_list), GFP_KERNEL);
 
 	/* register napi device */
 	if (dev && (ctlb->ccci_ops->md_ability & MODEM_CAP_NAPI)) {
-		timer_setup(ccmni->timer,ccmni_napi_poll_timeout,0);
+		timer_setup(&ccmni->timer, ccmni_napi_poll_timeout, 0);
 		//ccmni->timer->function = ccmni_napi_poll_timeout;
 		//ccmni->timer->data = (unsigned long)ccmni;
 		netif_napi_add(dev, ccmni->napi, ccmni_napi_poll, ctlb->ccci_ops->napi_poll_weigh);
@@ -684,7 +685,8 @@ static int ccmni_init(int md_id, ccmni_ccci_ops_t *ccci_info)
 #endif
 			}
 			dev->addr_len = ETH_ALEN; /* ethernet header size */
-			dev->destructor = free_netdev;
+			dev->priv_destructor = free_netdev;
+            dev->needs_free_netdev = true;
 			dev->netdev_ops = &ccmni_netdev_ops;
 			random_ether_addr((u8 *) dev->dev_addr);
 
@@ -756,12 +758,10 @@ static int ccmni_init(int md_id, ccmni_ccci_ops_t *ccci_info)
 	}
 
 	snprintf(ctlb->wakelock_name, sizeof(ctlb->wakelock_name), "ccmni_md%d", (md_id+1));
-	//wake_lock_init(&ctlb->ccmni_wakelock, WAKE_LOCK_SUSPEND, ctlb->wakelock_name);
-    if((ctlb->ccmni_wakelock = wakeup_source_create(ctlb->wakelock_name)))
+	if((ctlb->ccmni_wakelock = wakeup_source_create(ctlb->wakelock_name)))
         wakeup_source_add(ctlb->ccmni_wakelock);
 
-
-    return 0;
+	return 0;
 
 alloc_netdev_fail:
 	if (dev) {
@@ -931,7 +931,7 @@ static void ccmni_md_state_callback(int md_id, int ccmni_idx, MD_STATE state, in
 		break;
 
 	case RX_IRQ:
-		mod_timer(ccmni->timer, jiffies+HZ);
+		mod_timer(&ccmni->timer, jiffies+HZ);
 		napi_schedule(ccmni->napi);
 		__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ));
 		break;

@@ -16,8 +16,8 @@
 #include <ccci_config.h>
 
 #ifdef FEATURE_MTK_SWITCH_TX_POWER
-#define SWTP_EINT_PIN_PLUG_IN        (0)
-#define SWTP_EINT_PIN_PLUG_OUT       (21)
+#define SWTP_EINT_PIN_PLUG_IN        (1)
+#define SWTP_EINT_PIN_PLUG_OUT       (0)
 
 struct swtp_t {
 	unsigned int	md_id;
@@ -29,7 +29,6 @@ struct swtp_t {
 	unsigned int	retry_cnt;
 	spinlock_t		spinlock;
 	struct delayed_work delayed_work;
-    struct delayed_work switch_work;
 };
 /****************************************************************************************************************/
 /* External API Region called by ccci_swtp object */

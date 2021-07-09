@@ -401,7 +401,7 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 
 	struct cred *cred = (struct cred *)get_current_cred();
 
-	mm_segment_t orig_fs = get_fs();
+	//mm_segment_t orig_fs = get_fs();
 
 	if (*ppPatch) {
 		WMT_CCCI_WARN_FUNC("f/w patch already exists\n");
@@ -428,11 +428,11 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 	orig_gid = cred->fsgid;
 	cred->fsuid = cred->fsgid = 0;
 
-	set_fs(get_ds());
+	//set_fs(get_ds());
 
 	/* load patch file from fs */
 	iRet = wmt_conf_read_file_from_fs(pPatchName, &pfw->data, 0, padSzBuf);
-	set_fs(orig_fs);
+	/*set_fs(orig_fs);*/
 
 	cred->fsuid = orig_uid;
 	cred->fsgid = orig_gid;
@@ -469,7 +469,7 @@ static int wmt_conf_read_file_from_fs(unsigned char *pName, const u8 **ppBufPtr,
 	int read_len;
 	void *pBuf;
 
-	/* struct cred *cred = get_task_cred(current); */
+	struct cred *cred = get_task_cred(current);
 	const struct cred *cred = get_current_cred();
 
 	if (!ppBufPtr) {

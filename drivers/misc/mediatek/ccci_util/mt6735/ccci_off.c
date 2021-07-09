@@ -108,14 +108,14 @@ static void internal_md_power_down(void)
 	if (ret)
 		return;
 
-	md_topsm_base = ioremap(MD_TOPSM_BASE, 0x8C0);
-	modem_lite_topsm_base = ioremap(MODEM_LITE_TOPSM_BASE, 0x08C0);
-	modem_topsm_base = ioremap(MODEM_TOPSM_BASE, 0x8C0);
-	tdd_base = ioremap(TDD_BASE, 0x010);
-	ltelt1_base = ioremap(LTEL1_BASE, 0x60000);
-	ltelt1_base_1 = ioremap(0x2012045C, 0x4);
-	ltelt1_base_2 = ioremap(0x200308B0, 0x4);
-	md_pll_mixedsys_base = ioremap(MD_PLL_MIXEDSYS_BASE, 0x160);
+	md_topsm_base = ioremap_nocache(MD_TOPSM_BASE, 0x8C0);
+	modem_lite_topsm_base = ioremap_nocache(MODEM_LITE_TOPSM_BASE, 0x08C0);
+	modem_topsm_base = ioremap_nocache(MODEM_TOPSM_BASE, 0x8C0);
+	tdd_base = ioremap_nocache(TDD_BASE, 0x010);
+	ltelt1_base = ioremap_nocache(LTEL1_BASE, 0x60000);
+	ltelt1_base_1 = ioremap_nocache(0x2012045C, 0x4);
+	ltelt1_base_2 = ioremap_nocache(0x200308B0, 0x4);
+	md_pll_mixedsys_base = ioremap_nocache(MD_PLL_MIXEDSYS_BASE, 0x160);
 
 	pr_debug("[ccci-off]1.power on MD2G/HSPA\n");
 	/* power on MD2G */

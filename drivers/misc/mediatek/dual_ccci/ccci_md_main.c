@@ -626,11 +626,11 @@ void ccci_ee_info_dump(int md_id, struct DEBUG_INFO_T *debug_info)
 	char i_bit_ex_info[EE_BUF_LEN] = "\n[Others] May I-Bit dis too long\n";
 
 	struct rtc_time tm;
-	struct timespec64 tv = { 0 };
-	struct timespec64 tv_android = { 0 };
+	struct timeval tv = { 0 };
+	struct timeval tv_android = { 0 };
 	struct rtc_time tm_android;
 
-	ktime_get_real_ts64(&tv);
+	do_gettimeofday(&tv);
 	tv_android = tv;
 	rtc_time_to_tm(tv.tv_sec, &tm);
 	tv_android.tv_sec -= sys_tz.tz_minuteswest * 60;

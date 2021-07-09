@@ -208,7 +208,7 @@ static void c2k_hw_info_init(void)
 
 #ifdef CONFIG_OF_RESERVED_MEM
 	md3_mem_base_virt =
-	    (unsigned long)ioremap_nocache(md3_mem_base + C2K_IMG_DUMP_OFFSET,
+	    (unsigned long)ioremap(md3_mem_base + C2K_IMG_DUMP_OFFSET,
 					   C2K_IMG_DUMP_SIZE);
 #endif
 
@@ -318,12 +318,12 @@ void dump_c2k_bootup_status(void)
 
 	if (!init_done) {
 		init_done = 1;
-		c2k_iram_base_virt1 = ioremap_nocache(0x39000000, 64);
-		c2k_iram_base_virt2 = ioremap_nocache(0x39017018, 8);
-		c2k_uart0 = ioremap_nocache(0x10211370, 8);
-		bootst = ioremap_nocache(0x3A00B018, 8);
-		chipid = ioremap_nocache(0x3A00B01C, 8);
-		c2ksys_uart0 = ioremap_nocache(0x3A012000, 0x40);
+		c2k_iram_base_virt1 = ioremap(0x39000000, 64);
+		c2k_iram_base_virt2 = ioremap(0x39017018, 8);
+		c2k_uart0 = ioremap(0x10211370, 8);
+		bootst = ioremap(0x3A00B018, 8);
+		chipid = ioremap(0x3A00B01C, 8);
+		c2ksys_uart0 = ioremap(0x3A012000, 0x40);
 	}
 	C2K_MEM_LOG_TAG("[C2K] ======== Dump C2K bootup status begin ========\n");
 	C2K_MEM_LOG_TAG("[C2K] addr: 0x10211370 (UART GPIO)\n");
@@ -501,7 +501,7 @@ void enable_c2k_jtag(unsigned int mode)
 	} else if (mode == 2) {
 		if (first_init) {
 			first_init = 0;
-			c2k_jtag_setting = ioremap_nocache(0x10000700, 0x04);
+			c2k_jtag_setting = ioremap(0x10000700, 0x04);
 		}
 		c2k_write32(c2k_jtag_setting, 0,
 			    c2k_read32(c2k_jtag_setting, 0) | (0x1 << 2));
@@ -644,7 +644,7 @@ int ccif_notify_c2k(int ch_id)
 
 	if (first_init) {
 		first_init = 0;
-		ap_ccif_base = ioremap_nocache(AP_CCIF_BASE, 0x100);
+		ap_ccif_base = ioremap(AP_CCIF_BASE, 0x100);
 	}
 	busy = c2k_read32(ap_ccif_base, APCCIF_BUSY);
 

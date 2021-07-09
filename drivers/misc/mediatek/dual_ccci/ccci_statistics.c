@@ -30,7 +30,7 @@
 #define CCCI_LOG_MAX_LEN 16
 
 struct ccci_log_t {
-	struct timespec64 tv;
+	struct timeval tv;
 	struct ccci_msg_t msg;
 	int droped;
 };
@@ -67,7 +67,7 @@ void add_logic_layer_record(int md_id, struct ccci_msg_t *data, int drop)
 	record = &(ctlb->log[ctlb->log_idx]);
 	ctlb->log_idx++;
 	ctlb->log_idx &= (CCCI_LOG_MAX_LEN - 1);
-	ktime_get_real_ts64(&(record->tv));
+	do_gettimeofday(&(record->tv));
 	record->msg = *data;
 	record->droped = drop;
 	if (drop)

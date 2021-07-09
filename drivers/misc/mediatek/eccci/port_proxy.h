@@ -82,7 +82,7 @@ struct ccci_port {
 	wait_queue_head_t rx_wq;	/* for uplayer user */
 	int rx_length;
 	int rx_length_th;
-	struct wake_lock rx_wakelock;
+	struct wakeup_source *rx_wakelock;
 	unsigned int tx_busy_count;
 	unsigned int rx_busy_count;
 	int interception;
@@ -90,6 +90,8 @@ struct ccci_port {
 	unsigned int rx_drop_cnt;
 	unsigned int tx_pkg_cnt;
 	port_skb_handler skb_handler;
+    struct timer_list md_status_poller;
+	struct timer_list md_status_timeout;
 };
 
 struct port_proxy {
@@ -108,7 +110,7 @@ struct port_proxy {
 	unsigned int traffic_dump_flag;
 	/*do NOT use this manner, otherwise spinlock inside private_data will trigger alignment exception */
 	char wakelock_name[32];
-	struct wake_lock wakelock;
+	struct wakeup_source *wakelock;
 	/* refer to ccci_modem obj
 	* port sub class no need to reference, if really want, then add delegant API in port_proxy
 	*/
@@ -215,7 +217,7 @@ static inline int port_proxy_get_mdlog_dump_done(struct port_proxy *proxy_p)
 }
 static inline void port_proxy_start_wake_lock(struct port_proxy *proxy_p, int sec)
 {
-	wake_lock_timeout(&proxy_p->wakelock, sec * HZ);
+       __pm_wakeup_event(proxy_p->wakelock, jiffies_to_msecs(sec * HZ));
 }
 static inline struct ccci_port *port_proxy_get_port_by_minor(struct port_proxy *proxy_p, int minor)
 {
@@ -237,4 +239,5 @@ static inline int port_proxy_append_fsm_event(struct port_proxy *proxy_p, CCCI_F
 extern int get_md_port_cfg(int md_id, struct ccci_port **ports);
 extern int port_smem_cfg(int md_id, struct ccci_smem_layout *smem_layout);
 extern struct ccci_modem *ccci_md_get_modem_by_id(int md_id);
+extern int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid);
 #endif /* __PORT_PROXY_H__ */

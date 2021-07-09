@@ -29,7 +29,6 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/memblock.h>
-#include <linux/memblock.h>
 
 #ifdef CONFIG_OF
 #include <linux/of.h>

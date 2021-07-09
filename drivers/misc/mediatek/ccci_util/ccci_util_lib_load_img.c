@@ -92,11 +92,7 @@ static struct md_check_header_v5 md_img_header_v5[MAX_MD_NUM];
 static struct md_check_header_v6 md_img_header_v6[MAX_MD_NUM];
 /*static struct ccci_image_info		img_info[MAX_MD_NUM][IMG_NUM]; */
 char md_img_info_str[MAX_MD_NUM][256];
-//huyunge@wind-mobi.com 20161208 for one image start
-#ifdef CONFIG_WIND_MULTI_MD_ONE_IMAGE
-extern int get_bid_gpio(void);
-#endif
-//huyunge@wind-mobi.com 20161208 for one image end
+
 /*--- MD header check ------------ */
 static int check_dsp_header(int md_id, void *parse_addr, struct ccci_image_info *image)
 {
@@ -650,9 +646,6 @@ char *ccci_get_md_info_str(int md_id)
 	return md_img_info_str[md_id];
 }
 
-#ifdef CONFIG_LCT_MULTI_MD_IMAGE
-extern int sku ;// add by zhaofei - 2016-12-02-10-47
-#endif
 void get_md_postfix(int md_id, char k[], char buf[], char buf_ex[])
 {
 	/* name format: modem_X_YY_K_Ex.img */
@@ -670,85 +663,7 @@ void get_md_postfix(int md_id, char k[], char buf[], char buf_ex[])
 
 	if ((curr_ubin_id != 0) && (md_id == MD_SYS1)) {
 		if (buf) {
-			#ifdef CONFIG_WIND_MULTI_MD_ONE_IMAGE
-				#ifdef CONFIG_WIND_CO_CLK
-					snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_1", X, type_str[curr_ubin_id]);
-				#else
-					switch(get_bid_gpio()){
-						case EMEA_DS_NA_EVT:
-						case EMEA_SS_NA_EVT:
-						case EMEA_SS_NFC_EVT:
-						case EMEA_DS_NA_DVT:
-						case EMEA_SS_NA_DVT:
-						case EMEA_SS_NFC_DVT:
-						case EMEA_DS_NA_DVT2:
-						case EMEA_SS_NFC_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-						case EMEA_DS_NA_DVT2_1:
-						case EMEA_SS_NFC_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-						case EMEA_DS_NA_MP:
-						case EMEA_SS_NFC_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-							snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_1", X, type_str[curr_ubin_id]);
-							break;
-						case LATAM_DS_NA_EVT:
-						case LATAM_DS_NA_DVT:
-						case ROLA_SS_NA_DVT:
-						case ROLA_SS_NA_EVT:
-						case LATAM_DS_NA_SKY77643_DVT2:
-						case ROLA_SS_NA_SKY77643_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-						case LATAM_DS_NA_SKY77643_DVT2_1:
-						case ROLA_SS_NA_SKY77643_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-						case LATAM_DS_NA_SKY77643_MP:
-						case ROLA_SS_NA_SKY77643_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-							snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_2", X, type_str[curr_ubin_id]);
-							break;
-						case AP_DS_NA_EVT:
-						case AP_DS_NA_DVT:
-						case AP_DS_NA_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-						case AP_DS_NA_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-						case AP_DS_NA_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-							snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_3", X, type_str[curr_ubin_id]);
-							break;
-						case LATAM_DS_NA_SKY77638_DVT2:
-						case ROLA_SS_NA_SKY77638_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-						case LATAM_DS_NA_SKY77638_DVT2_1:
-						case ROLA_SS_NA_SKY77638_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-						case LATAM_DS_NA_SKY77638_MP:
-						case ROLA_SS_NA_SKY77638_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-							snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_4", X, type_str[curr_ubin_id]);
-							break;
-						case AP_B28_DS_NA_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-						case AP_B28_DS_NA_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-						case AP_B28_DS_NA_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-							snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_5", X, type_str[curr_ubin_id]);
-							break;
-						default:
-							snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_1", X, type_str[curr_ubin_id]);
-							break;
-					}
-				#endif
-			#else
-				snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_n", X, type_str[curr_ubin_id]);
-			#endif
+			snprintf(buf, IMG_POSTFIX_LEN, "%d_%s_n", X, type_str[curr_ubin_id]);
 			CCCI_UTIL_ERR_MSG_WITH_ID(md_id, "MD%d image postfix=%s\n", md_id + 1, buf);
 		}
 
@@ -785,103 +700,10 @@ void get_md_postfix(int md_id, char k[], char buf[], char buf_ex[])
 
 	/* K */
 	if (k == NULL)
-	{
-	//huyunge@wind-mobi.com 20161208 start
-	#ifdef CONFIG_WIND_MULTI_MD_ONE_IMAGE
-		#ifdef CONFIG_WIND_CO_CLK
-			snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_1", type_str[feature_val]);
-		#else
-			switch(get_bid_gpio()){
-				case EMEA_DS_NA_EVT:
-				case EMEA_SS_NA_EVT:
-				case EMEA_SS_NFC_EVT:
-				case EMEA_DS_NA_DVT:
-				case EMEA_SS_NA_DVT:
-				case EMEA_SS_NFC_DVT:
-				case EMEA_DS_NA_DVT2:
-				case EMEA_SS_NFC_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-				case EMEA_DS_NA_DVT2_1:
-				case EMEA_SS_NFC_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-				case EMEA_DS_NA_MP:
-				case EMEA_SS_NFC_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-					snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_1", type_str[feature_val]);
-					break;
-				case LATAM_DS_NA_EVT:
-				case LATAM_DS_NA_DVT:
-				case ROLA_SS_NA_DVT:
-				case ROLA_SS_NA_EVT:
-				case LATAM_DS_NA_SKY77643_DVT2:
-				case ROLA_SS_NA_SKY77643_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-				case LATAM_DS_NA_SKY77643_DVT2_1:
-				case ROLA_SS_NA_SKY77643_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-				case LATAM_DS_NA_SKY77643_MP:
-				case ROLA_SS_NA_SKY77643_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-					snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_2", type_str[feature_val]);
-					break;
-				case AP_DS_NA_EVT:
-				case AP_DS_NA_DVT:
-				case AP_DS_NA_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-				case AP_DS_NA_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-				case AP_DS_NA_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-					snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_3", type_str[feature_val]);
-					break;
-				case LATAM_DS_NA_SKY77638_DVT2:
-				case ROLA_SS_NA_SKY77638_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-				case LATAM_DS_NA_SKY77638_DVT2_1:
-				case ROLA_SS_NA_SKY77638_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-				case LATAM_DS_NA_SKY77638_MP:
-				case ROLA_SS_NA_SKY77638_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-					snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_4", type_str[feature_val]);
-					break;    //sunjingtao@wind-mobi.com at 20170303
-				case AP_B28_DS_NA_DVT2:
-//sunjingtao@wind-mobi.com at 20170119 begin
-				case AP_B28_DS_NA_DVT2_1:
-//sunjingtao@wind-mobi.com at 20170119 end
-//sunjingtao@wind-mobi.com at 20170322 begin
-				case AP_B28_DS_NA_MP:
-//sunjingtao@wind-mobi.com at 20170322 end
-					snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_5", type_str[feature_val]);				
-					break;	
-				default:
-					snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_1", type_str[feature_val]);
-					break;
-			}
-		#endif
-	#else
 		snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_n", type_str[feature_val]);
-	#endif
-	}
 	else
-	{
 		snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_%s", type_str[feature_val], k);
-    }
-// add by zhaofei - 2016-12-02-10-53
-#ifdef CONFIG_LCT_MULTI_MD_IMAGE
-	printk("sku is %d\n",sku);
-	if(sku == 0)
-		snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_1", type_str[feature_val]);
-	else if((sku == 1) || (sku == 2))
-		snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_2", type_str[feature_val]);
-	else if((sku == 3) || (sku == 4))
-		snprintf(YY_K, IMG_POSTFIX_LEN, "_%s_3", type_str[feature_val]);
-#endif
-// add by zhaofei - 2016-12-02-10-53
+
 	/* [_Ex] Get chip version */
 #if 0
 	if (get_chip_version() == CHIP_SW_VER_01)
@@ -979,11 +801,8 @@ TRY_LOAD_IMG:
 			i++;
 			goto TRY_LOAD_IMG;
 		} else {
-//add by MTK for multi-md image by LC
 			CCCI_UTIL_ERR_MSG_WITH_ID(md_id,
-			     "Try to load all md image failed:ret=%d!%s\n", ret,img_name);
-//end add by MTK for multi-md image
-
+			     "Try to load all md image failed:ret=%d!\n", ret);
 #if defined(CONFIG_MTK_AEE_FEATURE)
 			aed_md_exception_api(NULL, 0, NULL, 0, "Try to load all md image failed!", DB_OPT_DEFAULT);
 #endif

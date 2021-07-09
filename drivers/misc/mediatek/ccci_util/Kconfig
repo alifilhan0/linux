@@ -106,18 +106,3 @@ config MTK_C2K_LTE_MODE
 	  1=>svlte mode,
 	  2=>srlte mode
 
-config LCT_MULTI_MD_IMAGE
-	bool "LCT MULTI MD image"
-	default n
-
-config WIND_MULTI_MD_ONE_IMAGE
-	bool "configure multi Modem one image"
-	default n
-	help
-      y=>enable
-	  
-config WIND_CO_CLK
-	bool "configure co_clock"
-	default n
-	help
-      y=>enable

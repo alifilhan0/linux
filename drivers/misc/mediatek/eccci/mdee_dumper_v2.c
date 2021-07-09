@@ -187,7 +187,7 @@ static void mdee_info_dump_v2(struct md_ee *mdee)
 	struct ccci_smem_layout *smem_layout = ccci_md_get_smem(mdee->md_obj);
 	struct rtc_time tm;
 	struct timespec64 tv = { 0 };
-	struct timeval tv_android = { 0 };
+	struct timespec64 tv_android = { 0 };
 	struct rtc_time tm_android;
 	int md_dbg_dump_flag = ccci_md_get_dbg_dump_flag(mdee->md_obj);
 
@@ -202,16 +202,16 @@ static void mdee_info_dump_v2(struct md_ee *mdee)
 		goto err_exit;
 	}
 
- 	ktime_get_real_ts64(&tv);
+	ktime_get_real_ts64(&tv);
 	tv_android = tv;
-	rtc_time_to_tm(tv.tv_sec, &tm);
+	rtc_time64_to_tm(tv.tv_sec, &tm);
 	tv_android.tv_sec -= sys_tz.tz_minuteswest * 60;
-	rtc_time_to_tm(tv_android.tv_sec, &tm_android);
+	rtc_time64_to_tm(tv_android.tv_sec, &tm_android);
 	CCCI_ERROR_LOG(md_id, KERN, "Sync:%d%02d%02d %02d:%02d:%02d.%u(%02d:%02d:%02d.%03d(TZone))\n",
 		     tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 		     tm.tm_hour, tm.tm_min, tm.tm_sec,
-		     (unsigned int)tv.tv_usec,
-		     tm_android.tm_hour, tm_android.tm_min, tm_android.tm_sec, (unsigned int)tv_android.tv_usec);
+		     (unsigned int)tv.tv_nsec/1000,
+		     tm_android.tm_hour, tm_android.tm_min, tm_android.tm_sec, (unsigned int)tv_android.tv_nsec/1000);
 	for (core_id = 0; core_id < dumper->ex_core_num; core_id++) {
 		if (core_id == 1)
 			snprintf(ex_info_temp, EE_BUF_LEN_UMOLY, "%s", ex_info);

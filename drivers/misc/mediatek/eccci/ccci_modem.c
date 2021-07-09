@@ -105,7 +105,7 @@ void ccci_md_config(struct ccci_modem *md)
 	/* MD image */
 	md->mem_layout.md_region_phy = md_resv_mem_addr;
 	md->mem_layout.md_region_size = md_resv_mem_size;
-	md->mem_layout.md_region_vir = ioremap_nocache(md->mem_layout.md_region_phy, MD_IMG_DUMP_SIZE);
+	md->mem_layout.md_region_vir = ioremap(md->mem_layout.md_region_phy, MD_IMG_DUMP_SIZE);
 		/* do not remap whole region, consume too much vmalloc space */
 	/* DSP image */
 	md->mem_layout.dsp_region_phy = 0;
@@ -115,7 +115,7 @@ void ccci_md_config(struct ccci_modem *md)
 	md->mem_layout.smem_region_phy = md_resv_smem_addr;
 	md->mem_layout.smem_region_size = md_resv_smem_size;
 	md->mem_layout.smem_region_vir =
-	    ioremap_nocache(md->mem_layout.smem_region_phy, md->mem_layout.smem_region_size);
+	    ioremap(md->mem_layout.smem_region_phy, md->mem_layout.smem_region_size);
 
 	/* exception region */
 	md->smem_layout.ccci_exp_smem_base_phy = md->mem_layout.smem_region_phy + CCCI_SMEM_OFFSET_EXCEPTION;
@@ -202,7 +202,7 @@ void ccci_md_config(struct ccci_modem *md)
 	get_md1_md3_resv_smem_info(md->index, &md->mem_layout.md1_md3_smem_phy,
 		&md->mem_layout.md1_md3_smem_size);
 	md->mem_layout.md1_md3_smem_vir =
-	    ioremap_nocache(md->mem_layout.md1_md3_smem_phy, md->mem_layout.md1_md3_smem_size);
+	    ioremap(md->mem_layout.md1_md3_smem_phy, md->mem_layout.md1_md3_smem_size);
 
 	/* updae image info */
 	md->img_info[IMG_MD].type = IMG_MD;
@@ -543,7 +543,7 @@ static void config_ap_side_feature(struct ccci_modem *md, struct md_query_ap_fea
 
 	ap_side_md_feature->feature_set[MISC_INFO_HIF_DMA_REMAP].support_mask = CCCI_FEATURE_MUST_SUPPORT;
 
-#if defined(ENABLE_32K_CLK_LESS)
+/*#if defined(ENABLE_32K_CLK_LESS)
 	if (crystal_exist_status()) {
 		CCCI_DEBUG_LOG(md->index, KERN, "MISC_32K_LESS no support, crystal_exist_status 1\n");
 		ap_side_md_feature->feature_set[MISC_INFO_RTC_32K_LESS].support_mask = CCCI_FEATURE_NOT_SUPPORT;
@@ -554,7 +554,7 @@ static void config_ap_side_feature(struct ccci_modem *md, struct md_query_ap_fea
 #else
 	CCCI_DEBUG_LOG(md->index, KERN, "ENABLE_32K_CLK_LESS disabled\n");
 	ap_side_md_feature->feature_set[MISC_INFO_RTC_32K_LESS].support_mask = CCCI_FEATURE_NOT_SUPPORT;
-#endif
+#endif*/
 	ap_side_md_feature->feature_set[MISC_INFO_RANDOM_SEED_NUM].support_mask = CCCI_FEATURE_MUST_SUPPORT;
 	ap_side_md_feature->feature_set[MISC_INFO_GPS_COCLOCK].support_mask = CCCI_FEATURE_MUST_SUPPORT;
 	ap_side_md_feature->feature_set[MISC_INFO_SBP_ID].support_mask = CCCI_FEATURE_MUST_SUPPORT;

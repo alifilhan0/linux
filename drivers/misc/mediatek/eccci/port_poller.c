@@ -43,9 +43,9 @@ static void status_msg_handler(struct ccci_port *port, struct sk_buff *skb)
 		mod_timer(&status_poller->md_status_poller, jiffies + POLLING_INTERVAL_TIME * HZ);
 }
 
-static void md_status_poller_func(unsigned long data)
+static void md_status_poller_func(struct timer_list *t)
 {
-	struct ccci_port *port = (struct ccci_port *)data;
+	struct ccci_port *port = from_timer(port, t, md_status_poller);
 	struct port_md_status_poller *status_poller = port->private_data;
 	int md_id = port->md_id;
 	int ret = 0;
@@ -75,9 +75,9 @@ static void md_status_poller_func(unsigned long data)
 	}
 }
 
-static void md_status_timeout_func(unsigned long data)
+static void md_status_timeout_func(struct timer_list *t)
 {
-	struct ccci_port *port = (struct ccci_port *)data;
+	struct ccci_port *port = from_timer(port, t, md_status_timeout);
 	struct port_md_status_poller *status_poller = port->private_data;
 	int md_id = port->md_id;
 
@@ -140,12 +140,12 @@ static int port_poller_init(struct ccci_port *port)
 	port->skb_handler = &status_msg_handler;
 	status_poller = kzalloc(sizeof(struct port_md_status_poller), GFP_KERNEL);
 	port->private_data = status_poller;
-	init_timer(&status_poller->md_status_poller);
-	status_poller->md_status_poller.function = md_status_poller_func;
-	status_poller->md_status_poller.data = (unsigned long)port;
-	init_timer(&status_poller->md_status_timeout);
-	status_poller->md_status_timeout.function = md_status_timeout_func;
-	status_poller->md_status_timeout.data = (unsigned long)port;
+	timer_setup(&status_poller->md_status_poller, md_status_poller_func, 0);
+	//status_poller->md_status_poller.function = md_status_poller_func;
+	//status_poller->md_status_poller.data = (unsigned long)port;
+	timer_setup(&status_poller->md_status_timeout, md_status_timeout_func, 0);
+	//status_poller->md_status_timeout.function = md_status_timeout_func;
+	//status_poller->md_status_timeout.data = (unsigned long)port;
 
 	return 0;
 }

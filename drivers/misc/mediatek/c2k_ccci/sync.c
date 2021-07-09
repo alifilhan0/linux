@@ -25,7 +25,6 @@
 #include <linux/slab.h>
 #include <linux/irq.h>
 #include <linux/sched.h>
-#include <linux/wakelock.h>
 #include <linux/delay.h>
 #include <linux/wait.h>
 #include <linux/platform_device.h>
@@ -135,7 +134,7 @@ struct asc_tx_handle {
 	wait_queue_head_t wait;
 	wait_queue_head_t wait_tx_state;
 	struct mutex mlock;
-	struct wake_lock wlock;
+	struct wakeup_source *wlock;
 	struct timer_list timer_wait_ready;
 	struct timer_list timer_wait_idle;
 	struct timer_list timer_wait_sleep;
@@ -207,7 +206,7 @@ struct asc_rx_handle {
 	spinlock_t slock;
 	wait_queue_head_t wait;
 	struct mutex mlock;
-	struct wake_lock wlock;
+	struct wakeup_source *wlock;
 	struct timer_list timer;
 	struct list_head event_q;
 	struct list_head node;
@@ -337,7 +336,7 @@ static irqreturn_t asc_irq_cp_wake_ap(int irq, void *data)
 
 	if (level == cfg->polar) {
 		/*Cp requset Ap wake */
-		wake_lock(&rx->wlock);
+		__pm_stay_awake(rx->wlock);
 		/*FIXME: jump to ready as soon as possible to avoid the AP_READY error indication to CBP */
 		if (AP_RX_ST_IDLE == atomic_read(&rx->state)) {
 			ASCDPRT("Rx(%s): process event(%d) in state(%s).\n",
@@ -582,9 +581,9 @@ static int asc_rx_event_thread(void *data)
 	return 0;
 }
 
-static void asc_rx_event_timer(unsigned long data)
+static void asc_rx_event_timer(struct timer_list *t)
 {
-	struct asc_rx_handle *rx = (struct asc_rx_handle *)data;
+	struct asc_rx_handle *rx = from_timer(rx, t, timer);
 	/*ASCDPRT("%s timer is  time out.\n", rx->name); */
 	asc_rx_event_send(rx, AP_RX_EVENT_IDLE_TIMEOUT);
 }
@@ -695,7 +694,7 @@ static int asc_rx_handle_init(struct asc_rx_handle *rx)
 	INIT_LIST_HEAD(&rx->event_q);
 	INIT_LIST_HEAD(&rx->user_list);
 	spin_lock_init(&rx->slock);
-	setup_timer(&rx->timer, asc_rx_event_timer, (unsigned long)rx);
+	timer_setup(&rx->timer, asc_rx_event_timer, 0);
 	name = kzalloc(ASC_NAME_LEN, GFP_KERNEL);
 	if (!name) {
 		ret = -ENOMEM;
@@ -704,7 +703,8 @@ static int asc_rx_handle_init(struct asc_rx_handle *rx)
 		goto err_malloc_name;
 	}
 	snprintf(name, ASC_NAME_LEN, "asc_rx_%s", rx->cfg.name);
-	wake_lock_init(&rx->wlock, WAKE_LOCK_SUSPEND, name);
+	if((rx->wlock = wakeup_source_create(name)))
+        wakeup_source_add(rx->wlock);
 	init_waitqueue_head(&rx->wait);
 	INIT_WORK(&rx->ntf_prepare_work, asc_rx_notifier_prepare_work);
 	INIT_WORK(&rx->ntf_post_work, asc_rx_notifier_post_work);
@@ -739,7 +739,7 @@ static int asc_rx_handle_sleep(void *data, int event)
 
 	switch (event) {
 	case AP_RX_EVENT_REQUEST:
-		wake_lock(&rx->wlock);
+		__pm_stay_awake(rx->wlock);
 		atomic_set(&rx->state, AP_RX_ST_WAIT_READY);
 		asc_rx_notifier(rx, ASC_NTF_RX_PREPARE);
 		break;
@@ -775,7 +775,7 @@ static int asc_rx_handle_wait_ready(void *data, int event)
 		asc_rx_notifier(rx, ASC_NTF_RX_POST);
 		/*need ack ready to cp, do nothing if no gpio for ap_ready */
 		asc_rx_indicate_sleep(rx);
-		wake_unlock(&rx->wlock);
+		__pm_relax(rx->wlock);
 		break;
 	default:
 		ASCDPRT("ignore the rx event %d in state(%s)", event,
@@ -838,7 +838,7 @@ static int asc_rx_handle_idle(void *data, int event)
 		atomic_set(&rx->state, AP_RX_ST_SLEEP);
 		/*need ack ready to cp, do nothing if no gpio for ap_ready */
 		asc_rx_indicate_sleep(rx);
-		wake_unlock(&rx->wlock);
+		__pm_relax(rx->wlock);
 		break;
 
 	default:
@@ -1105,17 +1105,17 @@ static int asc_tx_event_thread(void *data)
 	return 0;
 }
 
-static void asc_tx_wait_ready_timer(unsigned long data)
+static void asc_tx_wait_ready_timer(struct timer_list *t)
 {
-	struct asc_tx_handle *tx = (struct asc_tx_handle *)data;
+	struct asc_tx_handle *tx = from_timer(tx, t, timer_wait_ready);
 	/*ASCDPRT("%s tx wait ready timer is timeout.\n", tx->name); */
 	asc_tx_event_send(tx, AP_TX_EVENT_WAIT_TIMEOUT);
 }
 
-static void asc_tx_wait_idle_timer(unsigned long data)
+static void asc_tx_wait_idle_timer(struct timer_list *t)
 {
 	char path[ASC_NAME_LEN] = { 0 };
-	struct asc_tx_handle *tx = (struct asc_tx_handle *)data;
+	struct asc_tx_handle *tx = from_timer(tx, t, timer_wait_idle);
 	unsigned long flags = 0;
 
 	ASCDPRT("%s: tx wait idle timer is timeout.\n", tx->cfg.name);
@@ -1133,16 +1133,16 @@ static void asc_tx_wait_idle_timer(unsigned long data)
 	}
 }
 
-static void asc_tx_wait_sleep_timer(unsigned long data)
+static void asc_tx_wait_sleep_timer(struct timer_list *t)
 {
-	struct asc_tx_handle *tx = (struct asc_tx_handle *)data;
+	struct asc_tx_handle *tx = from_timer(tx, t, timer_wait_sleep);
 	/*ASCDPRT("%s tx wait sleep timer is timeout.\n", tx->name); */
 	asc_tx_event_send(tx, AP_TX_EVENT_IDLE_TIMEOUT);
 }
 
-static void asc_tx_wait_after_cp_sleep(unsigned long data)
+static void asc_tx_wait_after_cp_sleep(struct timer_list *t)
 {
-	struct asc_tx_handle *tx = (struct asc_tx_handle *)data;
+	struct asc_tx_handle *tx = from_timer(tx, t, timer_wait_after_cp_sleep);
 
 	atomic_set(&tx->trigger_cp_sleep, 0);
 }
@@ -1176,8 +1176,8 @@ static int asc_tx_handle_init(struct asc_tx_handle *tx)
 	}
 
 	atomic_set(&tx->trigger_cp_sleep, 0);
-	setup_timer(&tx->timer_wait_after_cp_sleep, asc_tx_wait_after_cp_sleep,
-		    (unsigned long)tx);
+	timer_setup(&tx->timer_wait_after_cp_sleep, asc_tx_wait_after_cp_sleep,
+		    0);
 	asc_tx_sleep_cp(tx);
 
 	tx->auto_delay = ASC_TX_AUTO_DELAY_TIME;
@@ -1195,15 +1195,16 @@ static int asc_tx_handle_init(struct asc_tx_handle *tx)
 		goto err_malloc_name;
 	}
 	snprintf(name, ASC_NAME_LEN, "asc_tx_%s", tx->cfg.name);
-	wake_lock_init(&tx->wlock, WAKE_LOCK_SUSPEND, name);
+	if((tx->wlock = wakeup_source_create(name)))
+        wakeup_source_add(tx->wlock);
 	init_waitqueue_head(&tx->wait);
 	init_waitqueue_head(&tx->wait_tx_state);
-	setup_timer(&tx->timer_wait_ready, asc_tx_wait_ready_timer,
-		    (unsigned long)tx);
-	setup_timer(&tx->timer_wait_idle, asc_tx_wait_idle_timer,
-		    (unsigned long)tx);
-	setup_timer(&tx->timer_wait_sleep, asc_tx_wait_sleep_timer,
-		    (unsigned long)tx);
+	timer_setup(&tx->timer_wait_ready, asc_tx_wait_ready_timer,
+		    0);
+	timer_setup(&tx->timer_wait_idle, asc_tx_wait_idle_timer,
+		    0);
+	timer_setup(&tx->timer_wait_sleep, asc_tx_wait_sleep_timer,
+		    0);
 	atomic_set(&tx->state, AP_TX_ST_SLEEP);
 	atomic_set(&tx->count, 0);
 	atomic_set(&tx->sleeping, 0);
@@ -1236,7 +1237,7 @@ static int asc_tx_handle_sleep(void *data, int event)
 
 	switch (event) {
 	case AP_TX_EVENT_REQUEST:
-		wake_lock(&tx->wlock);
+		__pm_stay_awake(tx->wlock);
 		asc_tx_wake_cp(tx);
 		/*if(tx->cfg.gpio_ready >= 0) */
 		mod_timer(&tx->timer_wait_ready,
@@ -1301,7 +1302,7 @@ static int asc_tx_handle_wait_ready(void *data, int event)
 			atomic_set(&tx->state, AP_TX_ST_SLEEP);
 			asc_tx_refer_clear(tx);
 			wake_up_interruptible_all(&tx->wait_tx_state);
-			wake_unlock(&tx->wlock);
+			__pm_relax(tx->wlock);
 			asc_tx_notifier(tx, ASC_NTF_TX_UNREADY);
 			ASCPRT("try out to wake %s.\n", tx->cfg.name);
 		}
@@ -1312,7 +1313,7 @@ static int asc_tx_handle_wait_ready(void *data, int event)
 		tx->wait_try = 0;
 		atomic_set(&tx->state, AP_TX_ST_SLEEP);
 		atomic_set(&tx->sleeping, 0);
-		wake_unlock(&tx->wlock);
+		__pm_relax(tx->wlock);
 		wake_up_interruptible_all(&tx->wait_tx_state);
 		break;
 	default:
@@ -1340,7 +1341,7 @@ static int asc_tx_handle_ready(void *data, int event)
 		asc_tx_sleep_cp(tx);
 		atomic_set(&tx->state, AP_TX_ST_SLEEP);
 		atomic_set(&tx->sleeping, 0);
-		wake_unlock(&tx->wlock);
+		__pm_relax(tx->wlock);
 		/*mod_timer(&tx->timer_wait_sleep, jiffies + msecs_to_jiffies(ASC_TX_WAIT_IDLE_TIME)); */
 		break;
 	default:
@@ -1366,7 +1367,7 @@ static int asc_tx_handle_idle(void *data, int event)
 	switch (event) {
 	case AP_TX_EVENT_IDLE_TIMEOUT:
 		atomic_set(&tx->state, AP_TX_ST_SLEEP);
-		wake_unlock(&tx->wlock);
+		__pm_relax(tx->wlock);
 		break;
 	case AP_TX_EVENT_REQUEST:
 		del_timer(&tx->timer_wait_sleep);
@@ -1397,7 +1398,7 @@ static void asc_tx_handle_reset(struct asc_tx_handle *tx)
 	asc_tx_sleep_cp(tx);
 	atomic_set(&tx->state, AP_TX_ST_SLEEP);
 	wake_up_interruptible_all(&tx->wait_tx_state);
-	wake_unlock(&tx->wlock);
+	__pm_relax(tx->wlock);
 }
 
 /**
@@ -1948,7 +1949,7 @@ static void asc_rx_handle_reset(struct asc_rx_handle *rx)
 
 	ASCDPRT("%s %s\n", __func__, rx->cfg.name);
 	del_timer(&rx->timer);
-	wake_unlock(&rx->wlock);
+	__pm_relax(rx->wlock);
 	asc_rx_indicate_sleep(rx);
 	atomic_set(&rx->state, AP_RX_ST_SLEEP);
 	spin_lock_irqsave(&rx->slock, flags);

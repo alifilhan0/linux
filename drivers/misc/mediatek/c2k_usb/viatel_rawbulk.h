@@ -22,6 +22,7 @@
 #include <linux/usb/ch9.h>
 #include <linux/usb/composite.h>
 #include <linux/usb/gadget.h>
+#include <linux/wakelock.h>
 #include <linux/workqueue.h>
 #include <linux/device.h>
 #include <linux/tty.h>
@@ -83,7 +84,7 @@ struct rawbulk_function {
 	int initialized:1;	/* init-flag for activator worker */
 	struct work_struct activator;	/* asynic transaction starter */
 
-	struct wakeup_source *keep_awake;
+	struct wake_lock keep_awake;
 
 	/* USB Gadget related */
 	struct usb_function function;

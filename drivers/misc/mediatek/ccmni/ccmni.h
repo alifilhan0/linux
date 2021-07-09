@@ -71,7 +71,7 @@ typedef struct ccmni_instance {
 	int                net_if_off;
 	atomic_t           usage;
 	/* use pointer to keep these items unique, while switching between CCMNI instances */
-	struct timer_list  *timer;
+	struct timer_list  timer;
 	struct net_device  *dev;
 	struct napi_struct *napi;
 	unsigned int       rx_seq_num;

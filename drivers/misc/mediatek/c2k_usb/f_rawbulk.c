@@ -20,6 +20,7 @@
 #define DRIVER_VERSION  "1.0.1"
 
 #include <linux/err.h>
+#include <linux/wakelock.h>
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/wait.h>
@@ -274,7 +275,7 @@ static void do_activate(struct work_struct *data)
 
 		/* start rawbulk if enabled */
 		if (rawbulk_check_enable(fn)) {
-			__pm_stay_awake(fn->keep_awake);
+			wake_lock(&fn->keep_awake);
 			rc = rawbulk_start_transactions(fn->transfer_id, fn->nups,
 							fn->ndowns, fn->upsz, fn->downsz);
 			if (rc < 0)
@@ -297,7 +298,7 @@ static void do_activate(struct work_struct *data)
 			rawbulk_stop_transactions(fn->transfer_id);
 			/* keep the enable state, so we can enable again in next time */
 			/* set_enable_state(fn, 0); */
-			__pm_relax(fn->keep_awake);
+			wake_unlock(&fn->keep_awake);
 		}
 
 

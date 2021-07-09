@@ -911,7 +911,7 @@ int ccci_event_log(const char *fmt, ...)
 							"%d%02d%02d-%02d:%02d:%02d.%03d [%5lu.%06lu]%c(%x)[%d:%s]",
 							tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 							tm_android.tm_hour, tm_android.tm_min, tm_android.tm_sec,
-							(unsigned int)tv_android.tv_nsec / 1000,
+							(unsigned int)tv_android.tv_nsec/1000,
 							(unsigned long)ts_nsec, rem_nsec / 1000, state,
 							this_cpu, current->pid, current->comm);
 

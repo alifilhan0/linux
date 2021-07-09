@@ -114,14 +114,14 @@ static void mdee_dumper_info_dump_v1(struct md_ee *mdee)
 
 	ktime_get_real_ts64(&tv);
 	tv_android = tv;
-	rtc_time_to_tm(tv.tv_sec, &tm);
+	rtc_time64_to_tm(tv.tv_sec, &tm);
 	tv_android.tv_sec -= sys_tz.tz_minuteswest * 60;
-	rtc_time_to_tm(tv_android.tv_sec, &tm_android);
+	rtc_time64_to_tm(tv_android.tv_sec, &tm_android);
 	CCCI_ERROR_LOG(md_id, KERN, "Sync:%d%02d%02d %02d:%02d:%02d.%u(%02d:%02d:%02d.%03d(TZone))\n",
 		     tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 		     tm.tm_hour, tm.tm_min, tm.tm_sec,
-		     (unsigned int)tv.tv_usec,
-		     tm_android.tm_hour, tm_android.tm_min, tm_android.tm_sec, (unsigned int)tv_android.tv_usec);
+		     (unsigned int)tv.tv_nsec/1000,
+		     tm_android.tm_hour, tm_android.tm_min, tm_android.tm_sec, (unsigned int)tv_android.tv_nsec/1000);
 
 	ex_info = kmalloc(EE_BUF_LEN, GFP_ATOMIC);
 	if (ex_info == NULL) {

@@ -13,7 +13,9 @@
 
 
 #include <ssw.h>
+#include <linux/of.h>
 #include <mt-plat/mt_ccci_common.h>
+#include <linux/pinctrl/consumer.h>
 /*--------------Feature option---------------*/
 #define __ENABLE_SSW_SYSFS 1
 

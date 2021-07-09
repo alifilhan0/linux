@@ -14,14 +14,13 @@
 #ifndef __MODEM_CD_H__
 #define __MODEM_CD_H__
 
-#include <linux/wakelock.h>
 #include <linux/dmapool.h>
 #include <linux/timer.h>
 #include <linux/hrtimer.h>
 #include <linux/skbuff.h>
 #include <mt-plat/mt_ccci_common.h>
 
-#include "ccci_config.h"
+//#include "ccci_config.h"
 #include "ccci_bm.h"
 /*
   * hardcode, max queue number should be synced with port array in port_cfg.c and macros in ccci_core.h
@@ -192,9 +191,9 @@ struct md_cd_ctrl {
 	atomic_t cldma_irq_enabled;
 	atomic_t ccif_irq_enabled;
 	char trm_wakelock_name[32];
-	struct wake_lock trm_wake_lock;
+	struct wakeup_source *trm_wake_lock;
 	char peer_wakelock_name[32];
-	struct wake_lock peer_wake_lock;
+	struct wakeup_source *peer_wake_lock;
 	struct work_struct ccif_work;
 #ifdef ENABLE_HS1_POLLING_TIMER
 	struct timer_list hs1_polling_timer;

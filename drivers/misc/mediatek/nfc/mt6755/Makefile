@@ -11,6 +11,5 @@
 # GNU General Public License for more details.
 #
 
-##lipeng@wind-mobi.com 20161114 begin
-obj-y += pn544.o
-##lipeng@wind-mobi.com 20161114 end
+obj-$(CONFIG_NFC_MT6605)   += mt6605.o
+ccflags-$(CONFIG_NFC_MT6605) +=  -DDEBUG

@@ -10,8 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/
 
-obj-y   += pn548.o
-
-ccflags-y +=  -DDEBUG
+ccflags-y += -I$(srctree)/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/ccci_util/$(MTK_PLATFORM)
+# always build-in parts
+obj-$(CONFIG_MTK_CCCI_DEVICES) += ccci_off.o

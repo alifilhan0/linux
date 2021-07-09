@@ -24,7 +24,7 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <mt-plat/mt_ccci_common.h>
-#include "ccci_config.h"
+//#include "ccci_config.h"
 #include "ccci_debug.h"
 #include "ccci_fsm.h"
 
@@ -542,11 +542,6 @@ int swtp_init(int md_id);
 #define CCCI_IOC_ENTER_UPLOAD		_IO(CCCI_IOC_MAGIC, 61) /* modem log for S */
 #define CCCI_IOC_GET_RAT_STR			_IOR(CCCI_IOC_MAGIC, 62, unsigned int[16])
 #define CCCI_IOC_SET_RAT_STR			_IOW(CCCI_IOC_MAGIC, 63, unsigned int[16])
-//add by MTK for multi-md image by LC
-#define CCCI_IOC_GET_MD_SUB_ID			_IOR(CCCI_IOC_MAGIC, 64, unsigned int)
-//end add by MTK for multi-md image
-
-#define CCCI_IOC_GET_MD_SUB_ID			_IOR(CCCI_IOC_MAGIC, 64, unsigned int)//huyunge@wind-mobi.com 20161206 MTK PATCH multi-md one imag
 
 #define CCCI_IOC_SET_HEADER				_IO(CCCI_IOC_MAGIC,  112) /* emcs_va */
 #define CCCI_IOC_CLR_HEADER				_IO(CCCI_IOC_MAGIC,  113) /* emcs_va */
@@ -965,14 +960,5 @@ struct c2k_ctrl_port_msg {
 	unsigned char chan_num;
 	unsigned char option;
 } __packed; /* not necessary, but it's a good gesture, :) */
-
-// add by zhaofei for SWTP - 2016-12-05-17-17
-#define FEATURE_MTK_SWITCH_TX_POWER
-
-#ifdef FEATURE_MTK_SWITCH_TX_POWER
-#define SWTP_COMPATIBLE_DEVICE_ID "mediatek, swtp-eint"
-extern int swtp_init(int md_id);
-#endif
-// add by zhaofei - 2016-12-05-17-17
 
 #endif	/* __CCCI_CORE_H__ */

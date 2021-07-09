@@ -46,7 +46,8 @@ static inline void port_struct_init(struct ccci_port *port, struct port_proxy *p
 	port->modem = port_p->md_obj;
 	port->md_id = port_p->md_id;
 
-	wake_lock_init(&port->rx_wakelock, WAKE_LOCK_SUSPEND, port->name);
+	if((port->rx_wakelock = wakeup_source_create(port->name)))
+        wakeup_source_add(port->rx_wakelock);
 }
 
 static void port_dump_string(struct ccci_port *port, int dir, void *msg_buf, int len)
@@ -207,7 +208,7 @@ int port_recv_skb(struct ccci_port *port, struct sk_buff *skb)
 			__skb_queue_tail(&port->rx_skb_list, skb);
 		port->rx_pkg_cnt++;
 		spin_unlock_irqrestore(&port->rx_skb_list.lock, flags);
-		wake_lock_timeout(&port->rx_wakelock, HZ);
+		__pm_wakeup_event(port->rx_wakelock, jiffies_to_msecs(HZ));
 		wake_up_all(&port->rx_wq);
 
 		return 0;
@@ -773,7 +774,9 @@ struct port_proxy *port_proxy_alloc(int md_id, int md_capability, int napi_queue
 	proxy_p->napi_queue_mask = napi_queue_mask;
 	proxy_p->sim_type = 0xEEEEEEEE;	/* sim_type(MCC/MNC) sent by MD wouldn't be 0xEEEEEEEE */
 	snprintf(proxy_p->wakelock_name, sizeof(proxy_p->wakelock_name), "md%d_wakelock", md_id + 1);
-	wake_lock_init(&proxy_p->wakelock, WAKE_LOCK_SUSPEND, proxy_p->wakelock_name);
+	if((proxy_p->wakelock = wakeup_source_create(proxy_p->wakelock_name)))
+        wakeup_source_add(proxy_p->wakelock);
+
 
 	/* config port smem layout*/
 	smem_layout = ccci_md_get_smem(md);
@@ -1088,7 +1091,7 @@ long port_proxy_user_ioctl(struct port_proxy *proxy_p, int ch, unsigned int cmd,
 	unsigned int sim_mode, sim_switch_type, enable_sim_type, sim_id, bat_info;
 	unsigned int traffic_control = 0;
 	unsigned int sim_slot_cfg[4];
-	struct siginfo sig_info;
+	struct kernel_siginfo sig_info;
 	unsigned int sig_pid;
 	unsigned int md_boot_data[16] = { 0 };
 	int md_type = 0;
@@ -1102,7 +1105,7 @@ long port_proxy_user_ioctl(struct port_proxy *proxy_p, int ch, unsigned int cmd,
 	unsigned int val;
 	char magic_pattern[64];
 #endif
-	char md_sub_id[4];
+
 	switch (cmd) {
 	case CCCI_IOC_GET_MD_PROTOCOL_TYPE:
 		CCCI_ERROR_LOG(md_id, CHAR, "Call CCCI_IOC_GET_MD_PROTOCOL_TYPE!\n");
@@ -1393,13 +1396,6 @@ long port_proxy_user_ioctl(struct port_proxy *proxy_p, int ch, unsigned int cmd,
 
 	case CCCI_IOC_GET_EXT_MD_POST_FIX:
 		if (copy_to_user((void __user *)arg, ccci_md_get_post_fix(proxy_p->md_obj), IMG_POSTFIX_LEN)) {
-			CCCI_BOOTUP_LOG(md_id, CHAR, "CCCI_IOC_GET_EXT_MD_POST_FIX: copy_to_user fail\n");
-			ret = -EFAULT;
-		}
-		break;
-	case CCCI_IOC_GET_MD_SUB_ID:
-		snprintf(md_sub_id, sizeof(md_sub_id), "%d", 1);
-		if (copy_to_user((void __user *)arg, md_sub_id, sizeof(md_sub_id))) {
 			CCCI_BOOTUP_LOG(md_id, CHAR, "CCCI_IOC_GET_EXT_MD_POST_FIX: copy_to_user fail\n");
 			ret = -EFAULT;
 		}

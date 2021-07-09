@@ -38,7 +38,6 @@
 #include <linux/of_irq.h>
 #include <linux/of_address.h>
 #include <linux/syscore_ops.h>
-#include <mt_spm_sleep.h>
 #if defined(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
 #endif
@@ -277,10 +276,10 @@ static void cldma_dump_all_gpd(struct ccci_modem *md)
 }
 
 #if TRAFFIC_MONITOR_INTERVAL
-void md_cd_traffic_monitor_func(unsigned long data)
+void md_cd_traffic_monitor_func(struct timer_list *t)
 {
 	int i;
-	struct ccci_modem *md = (struct ccci_modem *)data;
+	struct ccci_modem *md = from_timer(md, t, traffic_monitor);
 	struct md_cd_ctrl *md_ctrl = (struct md_cd_ctrl *)md->private_data;
 	unsigned long q_rx_rem_nsec[CLDMA_RXQ_NUM];
 	unsigned long isr_rem_nsec;
@@ -402,9 +401,9 @@ static int cldma_queue_broadcast_state(struct ccci_modem *md, MD_STATE state, DI
 }
 
 #ifdef ENABLE_CLDMA_TIMER
-static void cldma_timeout_timer_func(unsigned long data)
+static void cldma_timeout_timer_func(struct timer_list *t)
 {
-	struct md_cd_queue *queue = (struct md_cd_queue *)data;
+	struct md_cd_queue *queue = from_timer(queue, t, timeout_timer);
 	struct ccci_modem *md = queue->modem;
 	struct ccci_port *port;
 	unsigned long long port_full = 0, i;
@@ -510,7 +509,7 @@ again:
 			ret = 0;
 		} else {
 #ifdef CCCI_SKB_TRACE
-			skb->tstamp.tv64 = sched_clock();
+			skb->tstamp = sched_clock();
 #endif
 			ccci_skb_enqueue(&queue->skb_list, skb);
 			wake_up_all(&queue->rx_wq);
@@ -669,7 +668,7 @@ static int cldma_net_rx_push_thread(void *arg)
 #ifdef CCCI_SKB_TRACE
 		md->netif_rx_profile[6] = sched_clock();
 		if (count > 0)
-			skb->tstamp.tv64 = sched_clock();
+			skb->tstamp = sched_clock();
 #endif
 		ccci_md_recv_skb(md, skb);
 		count++;
@@ -1064,9 +1063,9 @@ static void cldma_tx_queue_init(struct md_cd_queue *queue)
 	INIT_DELAYED_WORK(&queue->cldma_tx_work, cldma_tx_done);
 	CCCI_DEBUG_LOG(md->index, TAG, "txq%d work=%p\n", queue->index, &queue->cldma_tx_work);
 #ifdef ENABLE_CLDMA_TIMER
-	init_timer(&queue->timeout_timer);
-	queue->timeout_timer.function = cldma_timeout_timer_func;
-	queue->timeout_timer.data = (unsigned long)queue;
+	timer_setup(&queue->timeout_timer, cldma_timeout_timer_func, 0);
+//	queue->timeout_timer.function = cldma_timeout_timer_func;
+//	queue->timeout_timer.data = (unsigned long)queue;
 	queue->timeout_start = 0;
 	queue->timeout_end = 0;
 #endif
@@ -1761,15 +1760,15 @@ static irqreturn_t md_cd_wdt_isr(int irq, void *data)
 #endif
 #endif
 #endif
-	wake_lock_timeout(&md_ctrl->trm_wake_lock, 10 * HZ);
+	__pm_wakeup_event(md_ctrl->trm_wake_lock, jiffies_to_msecs(10 * HZ));
 	ccci_md_exception_notify(md, MD_WDT);
 	return IRQ_HANDLED;
 }
 
 #ifdef ENABLE_HS1_POLLING_TIMER
-void md_cd_hs1_polling_timer_func(unsigned long data)
+void md_cd_hs1_polling_timer_func(struct timer_list *t)
 {
-	struct ccci_modem *md = (struct ccci_modem *)data;
+	struct ccci_modem *md = from_timer(md, t, hs1_polling_timer);
 	struct md_cd_ctrl *md_ctrl = (struct md_cd_ctrl *)md->private_data;
 
 	md->ops->dump_info(md, DUMP_FLAG_CCIF, NULL, 0);
@@ -1841,7 +1840,7 @@ static void md_cd_exception(struct ccci_modem *md, HIF_EX_STAGE stage)
 			CCCI_ERROR_LOG(md->index, TAG, "MD found wrong sequence number\n");
 			md->ops->dump_info(md, DUMP_FLAG_CLDMA, NULL, -1);
 		}
-		wake_lock_timeout(&md_ctrl->trm_wake_lock, 10 * HZ);
+		__pm_wakeup_event(md_ctrl->trm_wake_lock, jiffies_to_msecs(10 * HZ));
 		ccci_md_exception_notify(md, EX_INIT);
 		/* disable CLDMA except un-stop queues */
 		cldma_stop_for_ee(md);
@@ -1921,7 +1920,7 @@ static irqreturn_t md_cd_ccif_isr(int irq, void *data)
 		ccci_md_status_notice(md, IN, CCCI_SMEM_CH, -1, RX_IRQ);
 	}
 	if (md_ctrl->channel_id & (1<<AP_MD_PEER_WAKEUP))
-		wake_lock_timeout(&md_ctrl->peer_wake_lock, HZ);
+		__pm_wakeup_event(md_ctrl->peer_wake_lock, jiffies_to_msecs(HZ));
 	if (md_ctrl->channel_id & (1<<AP_MD_SEQ_ERROR)) {
 		CCCI_ERROR_LOG(md->index, TAG, "MD check seq fail\n");
 		md->ops->dump_info(md, DUMP_FLAG_CCIF, NULL, 0);
@@ -2238,7 +2237,7 @@ static void md_cldma_clear(struct ccci_modem *md)
 	}
 	if (retry == 0 && cldma_read32(md_ctrl->cldma_ap_pdn_base, CLDMA_AP_CLDMA_IP_BUSY) != 0) {
 		CCCI_ERROR_LOG(md->index, TAG, "md_cldma_clear: wait md tx done failed.\n");
-		md_cd_traffic_monitor_func((unsigned long)md);
+		md_cd_traffic_monitor_func((struct timer_list *)md);
 		cldma_dump_register(md);
 	} else {
 		CCCI_NORMAL_LOG(md->index, TAG, "md_cldma_clear: md tx done\n");
@@ -3024,7 +3023,7 @@ static int md_cd_send_runtime_data(struct ccci_modem *md, unsigned int tx_ch, un
 	runtime->index = 0;
 	runtime->next = 0;
 	/* 32K clock less */
-#if defined(ENABLE_32K_CLK_LESS)
+/*#if defined(ENABLE_32K_CLK_LESS)
 	if (crystal_exist_status()) {
 		CCCI_DEBUG_LOG(md->index, TAG, "MISC_32K_LESS no support, crystal_exist_status 1\n");
 		runtime->support_mask |= (FEATURE_NOT_SUPPORT << (MISC_32K_LESS * 2));
@@ -3035,7 +3034,7 @@ static int md_cd_send_runtime_data(struct ccci_modem *md, unsigned int tx_ch, un
 #else
 	CCCI_DEBUG_LOG(md->index, TAG, "ENABLE_32K_CLK_LESS disabled\n");
 	runtime->support_mask |= (FEATURE_NOT_SUPPORT << (MISC_32K_LESS * 2));
-#endif
+#endif*/
 
 	/* random seed */
 	get_random_bytes(&random_seed, sizeof(int));
@@ -3684,15 +3683,19 @@ static int ccci_modem_probe(struct platform_device *plat_dev)
 	md_ctrl->txq_active = 0;
 	md_ctrl->rxq_active = 0;
 	snprintf(md_ctrl->trm_wakelock_name, sizeof(md_ctrl->trm_wakelock_name), "md%d_cldma_trm", md_id + 1);
-	wake_lock_init(&md_ctrl->trm_wake_lock, WAKE_LOCK_SUSPEND, md_ctrl->trm_wakelock_name);
-	snprintf(md_ctrl->peer_wakelock_name, sizeof(md_ctrl->peer_wakelock_name), "md%d_cldma_peer", md_id + 1);
-	wake_lock_init(&md_ctrl->peer_wake_lock, WAKE_LOCK_SUSPEND, md_ctrl->peer_wakelock_name);
-	INIT_WORK(&md_ctrl->ccif_work, md_cd_ccif_work);
+	if((md_ctrl->trm_wake_lock = wakeup_source_create(md_ctrl->trm_wakelock_name)))
+        wakeup_source_add(md_ctrl->trm_wake_lock);
+
+    snprintf(md_ctrl->peer_wakelock_name, sizeof(md_ctrl->peer_wakelock_name), "md%d_cldma_peer", md_id + 1);
+    if((md_ctrl->peer_wake_lock = wakeup_source_create(md_ctrl->peer_wakelock_name)))
+        wakeup_source_add(md_ctrl->peer_wake_lock);
+
+    INIT_WORK(&md_ctrl->ccif_work, md_cd_ccif_work);
 	tasklet_init(&md_ctrl->cldma_rxq0_task, md_cldma_rxq0_tasklet, (unsigned long)md);
 #ifdef ENABLE_HS1_POLLING_TIMER
-	init_timer(&md_ctrl->hs1_polling_timer);
-	md_ctrl->hs1_polling_timer.function = md_cd_hs1_polling_timer_func;
-	md_ctrl->hs1_polling_timer.data = (unsigned long)md;
+	timer_setup(&md_ctrl->hs1_polling_timer, md_cd_hs1_polling_timer_func, 0);
+	//md_ctrl->hs1_polling_timer.function = md_cd_hs1_polling_timer_func;
+	//md_ctrl->hs1_polling_timer.data = (unsigned long)md;
 #endif
 	spin_lock_init(&md_ctrl->cldma_timeout_lock);
 	for (i = 0; i < QUEUE_LEN(md_ctrl->txq); i++)
@@ -3714,9 +3717,9 @@ static int ccci_modem_probe(struct platform_device *plat_dev)
 	atomic_set(&md_ctrl->cldma_irq_enabled, 1);
 	atomic_set(&md_ctrl->ccif_irq_enabled, 1);
 #if TRAFFIC_MONITOR_INTERVAL
-	init_timer(&md_ctrl->traffic_monitor);
-	md_ctrl->traffic_monitor.function = md_cd_traffic_monitor_func;
-	md_ctrl->traffic_monitor.data = (unsigned long)md;
+	timer_setup(&md_ctrl->traffic_monitor, md_cd_traffic_monitor_func, 0);
+	//md_ctrl->traffic_monitor.function = md_cd_traffic_monitor_func;
+	//md_ctrl->traffic_monitor.data = (unsigned long)md;
 #endif
 	/* register modem */
 	ccci_md_register(md);

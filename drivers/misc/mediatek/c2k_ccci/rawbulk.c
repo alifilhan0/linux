@@ -34,7 +34,6 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/err.h>
-#include <linux/wakelock.h>
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/wait.h>
@@ -431,7 +430,7 @@ static ssize_t rawbulk_attr_store(struct device *dev, struct device_attribute *a
 
 
 				/* Start rawbulk transfer */
-				wake_lock(&fn->keep_awake);
+				__pm_stay_awake(fn->keep_awake);
 				rc = rawbulk_start_transactions(fn->transfer_id, nups,
 								ndowns, upsz, downsz);
 				if (rc < 0)
@@ -449,7 +448,7 @@ static ssize_t rawbulk_attr_store(struct device *dev, struct device_attribute *a
 					modem_dcd_state();
 				}
 
-				wake_unlock(&fn->keep_awake);
+				__pm_relax(fn->keep_awake);
 			}
 		}
 	} else if (idx == ATTR_DTR) {
@@ -505,7 +504,7 @@ static ssize_t rawbulk_attr_store(struct device *dev, struct device_attribute *a
 			fn->downsz = downsz;
 		} else {
 			rawbulk_stop_transactions(fn->transfer_id);
-			wake_unlock(&fn->keep_awake);
+			__pm_relax(fn->keep_awake);
 			C2K_NOTE("enable to 0\n");
 			set_enable_state(fn, 0);
 		}
@@ -673,7 +672,8 @@ static __init struct rawbulk_function *rawbulk_alloc_function(int transfer_id)
 	}
 
 	spin_lock_init(&fn->lock);
-	wake_lock_init(&fn->keep_awake, WAKE_LOCK_SUSPEND, fn->longname);
+	if((fn->keep_awake = wakeup_source_create(fn->longname)))
+        wakeup_source_add(fn->keep_awake);
 	return fn;
 }
 
@@ -683,7 +683,7 @@ static void rawbulk_destroy_function(struct rawbulk_function *fn)
 
 	if (!fn)
 		return;
-	wake_lock_destroy(&fn->keep_awake);
+	wakeup_source_destroy(fn->keep_awake);
 	rawbulk_remove_files(fn);
 	device_destroy(rawbulk_class, fn->dev->devt);
 	kfree(fn);

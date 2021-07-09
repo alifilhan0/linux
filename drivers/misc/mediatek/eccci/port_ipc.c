@@ -78,7 +78,7 @@ static int port_ipc_ack_recv_skb(struct ccci_port *port, struct sk_buff *skb)
 	clear_bit(CCCI_TASK_PENDING, &ipc_ctrl->flag);
 	wake_up_all(&ipc_ctrl->tx_wq);
 	ccci_free_skb(skb);
-	wake_lock_timeout(&port->rx_wakelock, HZ / 2);
+	__pm_wakeup_event(port->rx_wakelock, jiffies_to_msecs(HZ / 2));
 	return 0;
 }
 

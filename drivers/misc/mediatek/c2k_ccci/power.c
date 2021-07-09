@@ -26,7 +26,6 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/irq.h>
-#include <linux/wakelock.h>
 #include <linux/delay.h>
 #include <linux/gpio.h>
 #include <linux/sched.h>
@@ -60,19 +59,19 @@
 
 /*event for vmodem, which must be same as viatelutilis.h */
 enum ASC_USERSPACE_NOTIFIER_CODE {
-	ASC_USER_USB_WAKE = (__SI_POLL | 100),
+	ASC_USER_USB_WAKE = (SIL_POLL | 100),
 	ASC_USER_USB_SLEEP,
 	ASC_USER_UART_WAKE,
 	ASC_USER_UART_SLEEP,
 	ASC_USER_SDIO_WAKE,
 	ASC_USER_SDIO_SLEEP,
-	ASC_USER_MDM_POWER_ON = (__SI_POLL | 200),
+	ASC_USER_MDM_POWER_ON = (SIL_POLL | 200),
 	ASC_USER_MDM_POWER_OFF,
 	ASC_USER_MDM_RESET_ON,
 	ASC_USER_MDM_RESET_OFF,
-	ASC_USER_MDM_ERR = (__SI_POLL | 300),
+	ASC_USER_MDM_ERR = (SIL_POLL | 300),
 	ASC_USER_MDM_ERR_ENHANCE,
-	ASC_USER_MDM_IPOH = (__SI_POLL | 400),
+	ASC_USER_MDM_IPOH = (SIL_POLL | 400),
 	ASC_USER_MDM_WDT,
 	ASC_USER_MDM_EXCEPTION,
 	ASC_USER_MDM_RESET_ON_SINGLE,
@@ -94,7 +93,7 @@ struct c2k_modem_data {
 	struct notifier_block wdt_ntf;
 	struct notifier_block excp_ntf;
 #endif
-	struct wake_lock wlock;
+	struct wakeup_source *wlock;
 	struct work_struct work;
 	atomic_t count;
 	unsigned long ntf_flags;
@@ -133,7 +132,7 @@ void c2k_reset_modem(int type)
 	}
 	atomic_set(&modem_not_ready, 1);
 
-	wake_lock_timeout(&cmdata->wlock, MDM_RST_LOCK_TIME * HZ);
+	__pm_wakeup_event(cmdata->wlock, jiffies_to_msecs(MDM_RST_LOCK_TIME * HZ));
 
 	pr_debug("[C2K] %s: set md reset.\n", __func__);
 	spin_lock_irqsave(&cmdata->modem->status_lock, flags);
@@ -688,8 +687,8 @@ static irqreturn_t modem_reset_indication_irq(int irq, void *data)
 		if (c2k_gpio_get_value(GPIO_C2K_MDM_RST_IND)) {
 			pr_debug("[C2K] %s %d ON, md is off now...\n", __func__,
 				 __LINE__);
-			wake_lock_timeout(&cmdata->wlock,
-					  MDM_RST_LOCK_TIME * HZ);
+			__pm_wakeup_event(cmdata->wlock,
+					  jiffies_to_msecs(MDM_RST_LOCK_TIME * HZ));
 /*#ifdef CONFIG_EVDO_DT_VIA_SUPPORT*/
 			modem_notify_event(MDM_EVT_NOTIFY_RESET_ON);
 /*#endif*/
@@ -943,10 +942,10 @@ static long misc_modem_ioctl(struct file *file, unsigned int
 			return -EINVAL;
 		if (flag) {
 			pr_debug("hold on wakelock.\n");
-			wake_lock(&cmdata->wlock);
+			__pm_stay_awake(cmdata->wlock);
 		} else {
 			pr_debug("release wakelock.\n");
-			wake_unlock(&cmdata->wlock);
+			__pm_relax(cmdata->wlock);
 		}
 		break;
 	case CMDM_IOCTL_IGNORE:
@@ -1080,7 +1079,9 @@ static int modem_data_init(struct c2k_modem_data *d)
 	}
 	d->ntf_flags = 0;
 	RAW_INIT_NOTIFIER_HEAD(&d->ntf);
-	wake_lock_init(&d->wlock, WAKE_LOCK_SUSPEND, "cbp_rst");
+	if((d->wlock = wakeup_source_create("cbp_rst")))
+        wakeup_source_add(d->wlock);
+
 	INIT_WORK(&d->work, modem_notify_task);
 	d->rst_ntf.notifier_call = modem_reset_notify_misc;
 #ifndef CONFIG_EVDO_DT_VIA_SUPPORT
@@ -1233,7 +1234,7 @@ static void __exit modem_exit(void)
 	modem_unregister_notifier(&cmdata->err_ntf);
 
 	if (cmdata)
-		wake_lock_destroy(&cmdata->wlock);
+		wakeup_source_destroy(cmdata->wlock);
 }
 
 late_initcall_sync(modem_init);

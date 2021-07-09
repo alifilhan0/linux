@@ -568,9 +568,9 @@ static void modem_smem_read_done_work(struct work_struct *work)
 }
 #endif
 
-static void c2k_heart_beat_timer(unsigned long data)
+static void c2k_heart_beat_timer(struct timer_list *t)
 {
-	struct sdio_modem *modem = (struct sdio_modem *)data;
+	struct sdio_modem *modem = from_timer(modem, t, heart_beat_timer);
 
 	if (modem->status != MD_READY) {
 		LOGPRT(LOG_ERR, "heart beat timer expired, but modem is not ready!\n");
@@ -589,19 +589,19 @@ static void c2k_heart_beat_timer(unsigned long data)
 		  jiffies + msecs_to_jiffies(FORCE_ASSERT_TIMEOUT));
 }
 
-static void c2k_poll_status_timer(unsigned long data)
+static void c2k_poll_status_timer(struct timer_list *t)
 {
-	struct sdio_modem *modem = (struct sdio_modem *)data;
+	struct sdio_modem *modem = from_timer(modem, t, poll_timer);
 
 	LOGPRT(LOG_INFO, "poll c2k now!\n");
 	schedule_work(&modem->poll_hb_work);
 	/*poll_c2k(); */
 }
 
-static void c2k_force_assert_timer(unsigned long data)
+static void c2k_force_assert_timer(struct timer_list *t)
 {
-	struct sdio_modem *modem = (struct sdio_modem *)data;
-	int db_opt = DB_OPT_DEFAULT;
+	struct sdio_modem *modem = from_timer(modem, t, force_assert_timer);
+	int __maybe_unused db_opt = DB_OPT_DEFAULT;
 	char ex_info[EE_BUF_LEN] = "";	/*attention, be careful with string length! */
 	char buff[AED_STR_LEN];
 
@@ -2385,7 +2385,7 @@ static int modem_exception_handler(struct sdio_modem *modem)
 	/*ccci_msg_t *ccci_msg = NULL; */
 	struct dump_debug_info *debug_info = NULL;
 	char ex_info[EE_BUF_LEN] = "";	/*attention, be careful with string length! */
-	int db_opt = DB_OPT_DEFAULT;
+	int __maybe_unused db_opt = DB_OPT_DEFAULT;
 	char buff[AED_STR_LEN];
 	struct _exception_msg *excp_msg = NULL;
 	unsigned long flags;
@@ -2594,7 +2594,7 @@ static int sdio_modem_log_input(struct sdio_modem *modem, unsigned int index)
 	       modem->curr_log_blk.address, modem->curr_log_blk.length);
 	modem->log_blk_stamp = sched_clock();
 	log_addr =
-	    ioremap_nocache(md3_mem_base +
+	    ioremap(md3_mem_base +
 			    modem->curr_log_blk.address,
 			    modem->curr_log_blk.length <
 			    16 ? 16 : modem->curr_log_blk.length);
@@ -4992,7 +4992,7 @@ int check_img_header(struct sdio_modem *modem)
 	loff_t fsize;
 	loff_t offset;
 	/*loff_t *pos; */
-	mm_segment_t old_fs;
+	//mm_segment_t old_fs;
 	int ret = 0;
 	struct md_check_header *header = NULL;
 	struct ccci_image_info *img;
@@ -5017,7 +5017,7 @@ int check_img_header(struct sdio_modem *modem)
 	}
 	img = &modem->img_info;
 
-	inode = filp->f_dentry->d_inode;
+	inode = filp->f_path.dentry->d_inode;
 
 	fsize = inode->i_size;
 	LOGPRT(LOG_INFO, "%s: %s size %lld\n", __func__, C2K_IMG_PATH, fsize);
@@ -5030,8 +5030,8 @@ int check_img_header(struct sdio_modem *modem)
 
 	offset = 0 - sizeof(struct md_check_header);
 
-	old_fs = get_fs();
-	set_fs(KERNEL_DS);
+	//old_fs = get_fs();
+	//set_fs(KERNEL_DS);
 
 	header = kzalloc(sizeof(struct md_check_header), GFP_KERNEL);
 	if (!header) {
@@ -5044,7 +5044,7 @@ int check_img_header(struct sdio_modem *modem)
 	    filp->f_op->read(filp, (char *)header,
 			     sizeof(struct md_check_header), &filp->f_pos);
 
-	set_fs(old_fs);
+	//set_fs(old_fs);
 
 	if (ret > 0) {
 		ret = strncmp(header->check_header, MD_HEADER_MAGIC_NO, 12);
@@ -6083,17 +6083,17 @@ int modem_sdio_init(struct cbp_platform_data *pdata)
 		goto exit_tty;
 	}
 #ifdef TX_DONE_TRACE
-	setup_timer(&timer_wait_tx_done, wait_tx_done_timer,
-		    (unsigned long)"C2K_TX");
+	timer_setup(&timer_wait_tx_done, wait_tx_done_timer,
+		    0);
 #endif
 
 #ifndef CONFIG_EVDO_DT_VIA_SUPPORT
-	setup_timer(&modem->heart_beat_timer, c2k_heart_beat_timer,
-		    (unsigned long)modem);
-	setup_timer(&modem->poll_timer, c2k_poll_status_timer,
-		    (unsigned long)modem);
-	setup_timer(&modem->force_assert_timer, c2k_force_assert_timer,
-		    (unsigned long)modem);
+	timer_setup(&modem->heart_beat_timer, c2k_heart_beat_timer,
+		    0);
+	timer_setup(&modem->poll_timer, c2k_poll_status_timer,
+		    0);
+	timer_setup(&modem->force_assert_timer, c2k_force_assert_timer,
+		    0);
 #endif
 	LOGPRT(LOG_INFO, " %s: sdio driver is initialized!\n", __func__);
 	pr_debug("%s %d: Exit.\n", __func__, __LINE__);

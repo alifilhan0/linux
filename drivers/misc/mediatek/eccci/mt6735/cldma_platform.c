@@ -12,6 +12,7 @@
  */
 
 #include <linux/platform_device.h>
+#include <linux/pinctrl/consumer.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/of.h>
@@ -26,6 +27,7 @@
 #endif /*CONFIG_MTK_CLKMGR */
 #include <mt-plat/upmu_common.h>
 #include <mach/mt_pbm.h>
+//#include <mt_spm_sleep.h>
 
 
 #include "ccci_modem.h"
@@ -35,9 +37,6 @@
 #include "cldma_reg.h"
 #include "modem_reg_base.h"
 
-#ifdef FEATURE_RF_CLK_BUF
-#include <mt_clkbuf_ctl.h>
-#endif
 #ifdef FEATURE_INFORM_NFC_VSIM_CHANGE
 #include <mach/mt6605.h>
 #endif
@@ -155,19 +154,19 @@ int md_cd_io_remap_md_side_register(struct ccci_modem *md)
 	md_ctrl->cldma_ap_ao_base = (void __iomem *)(md_ctrl->hw_info->cldma_ap_ao_base);
 	md_ctrl->cldma_md_pdn_base = (void __iomem *)(md_ctrl->hw_info->cldma_md_pdn_base);
 	md_ctrl->cldma_md_ao_base = (void __iomem *)(md_ctrl->hw_info->cldma_md_ao_base);
-	md_ctrl->md_boot_slave_Vector = ioremap_nocache(md_ctrl->hw_info->md_boot_slave_Vector, 0x4);
-	md_ctrl->md_boot_slave_Key = ioremap_nocache(md_ctrl->hw_info->md_boot_slave_Key, 0x4);
-	md_ctrl->md_boot_slave_En = ioremap_nocache(md_ctrl->hw_info->md_boot_slave_En, 0x4);
-	md_ctrl->md_rgu_base = ioremap_nocache(md_ctrl->hw_info->md_rgu_base, 0x40);
-	md_ctrl->md_global_con0 = ioremap_nocache(MD_GLOBAL_CON0, 0x4);
+	md_ctrl->md_boot_slave_Vector = ioremap(md_ctrl->hw_info->md_boot_slave_Vector, 0x4);
+	md_ctrl->md_boot_slave_Key = ioremap(md_ctrl->hw_info->md_boot_slave_Key, 0x4);
+	md_ctrl->md_boot_slave_En = ioremap(md_ctrl->hw_info->md_boot_slave_En, 0x4);
+	md_ctrl->md_rgu_base = ioremap(md_ctrl->hw_info->md_rgu_base, 0x40);
+	md_ctrl->md_global_con0 = ioremap(MD_GLOBAL_CON0, 0x4);
 
-	md_ctrl->md_bus_status = ioremap_nocache(MD_BUS_STATUS_BASE, MD_BUS_STATUS_LENGTH);
-	md_ctrl->md_pc_monitor = ioremap_nocache(MD_PC_MONITOR_BASE, MD_PC_MONITOR_LENGTH);
-	md_ctrl->md_topsm_status = ioremap_nocache(MD_TOPSM_STATUS_BASE, MD_TOPSM_STATUS_LENGTH);
-	md_ctrl->md_ost_status = ioremap_nocache(MD_OST_STATUS_BASE, MD_OST_STATUS_LENGTH);
-	md_ctrl->md_pll = ioremap_nocache(MD_PLL_BASE, MD_PLL_LENGTH);
+	md_ctrl->md_bus_status = ioremap(MD_BUS_STATUS_BASE, MD_BUS_STATUS_LENGTH);
+	md_ctrl->md_pc_monitor = ioremap(MD_PC_MONITOR_BASE, MD_PC_MONITOR_LENGTH);
+	md_ctrl->md_topsm_status = ioremap(MD_TOPSM_STATUS_BASE, MD_TOPSM_STATUS_LENGTH);
+	md_ctrl->md_ost_status = ioremap(MD_OST_STATUS_BASE, MD_OST_STATUS_LENGTH);
+	md_ctrl->md_pll = ioremap(MD_PLL_BASE, MD_PLL_LENGTH);
 #ifdef MD_PEER_WAKEUP
-	md_ctrl->md_peer_wakeup = ioremap_nocache(MD_PEER_WAKEUP, 0x4);
+	md_ctrl->md_peer_wakeup = ioremap(MD_PEER_WAKEUP, 0x4);
 #endif
 	return 0;
 }
@@ -239,9 +238,7 @@ int md_cd_power_on(struct ccci_modem *md)
 	int ret = 0;
 	unsigned int reg_value;
 	struct md_cd_ctrl *md_ctrl = (struct md_cd_ctrl *)md->private_data;
-#if defined(FEATURE_RF_CLK_BUF)
-	struct pinctrl_state *RFIC0_01_mode;
-#endif
+
 
 	/* turn on VLTE */
 #ifdef FEATURE_VLTE_SUPPORT
@@ -282,15 +279,7 @@ int md_cd_power_on(struct ccci_modem *md)
 	ccci_write32(infra_ao_base, 0x338, reg_value);
 	CCCI_NORMAL_LOG(md->index, CORE, "md_cd_power_on: set md1_srcclkena bit(0x1000_0338)=0x%x\n",
 		     ccci_read32(infra_ao_base, 0x338));
-#ifdef FEATURE_RF_CLK_BUF
-	/* config RFICx as BSI */
-	mutex_lock(&clk_buf_ctrl_lock);	/* fixme,clkbuf, ->down(&clk_buf_ctrl_lock_2); */
-	CCCI_NORMAL_LOG(md->index, TAG, "clock buffer, BSI ignore mode\n");
-	if (NULL != mdcldma_pinctrl) {
-		RFIC0_01_mode = pinctrl_lookup_state(mdcldma_pinctrl, "RFIC0_01_mode");
-		pinctrl_select_state(mdcldma_pinctrl, RFIC0_01_mode);
-	}
-#endif
+
 	/* power on MD_INFRA and MODEM_TOP */
 	switch (md->index) {
 	case MD_SYS1:
@@ -309,9 +298,6 @@ int md_cd_power_on(struct ccci_modem *md)
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end kicker_pbm_by_md(0,true)\n");
 		break;
 	}
-#ifdef FEATURE_RF_CLK_BUF
-	mutex_unlock(&clk_buf_ctrl_lock);	/* fixme,clkbuf, ->delete */
-#endif
 
 #ifdef FEATURE_INFORM_NFC_VSIM_CHANGE
 	/* notify NFC */
@@ -358,9 +344,7 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 	int ret = 0;
 	int count = 50;
 	unsigned int reg_value;
-#if defined(FEATURE_RF_CLK_BUF)
-	struct pinctrl_state *RFIC0_04_mode;
-#endif
+
 #if defined(FEATURE_VLTE_SUPPORT)
 	struct pinctrl_state *vsram_output_low;
 #endif
@@ -383,9 +367,7 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 			break;
 		}
 	}
-#ifdef FEATURE_RF_CLK_BUF
-	mutex_lock(&clk_buf_ctrl_lock);
-#endif
+
 	/* power off MD_INFRA and MODEM_TOP */
 	switch (md->index) {
 	case MD_SYS1:
@@ -393,25 +375,14 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 		ret = md_power_off(SYS_MD1, timeout);
 #else
 		clk_disable(clk_scp_sys_md1_main);
-#ifdef FEATURE_RF_CLK_BUF
-		mutex_unlock(&clk_buf_ctrl_lock);
-#endif
+
 		clk_unprepare(clk_scp_sys_md1_main);	/* cannot be called in mutex context */
-#ifdef FEATURE_RF_CLK_BUF
-		mutex_lock(&clk_buf_ctrl_lock);
-#endif
 #endif
 		kicker_pbm_by_md(MD1, false);
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end kicker_pbm_by_md(0,false)\n");
 		break;
 	}
-#ifdef FEATURE_RF_CLK_BUF
-	/* config RFICx as AP SPM control */
-	CCCI_NORMAL_LOG(md->index, TAG, "clock buffer, AP SPM control mode\n");
-	RFIC0_04_mode = pinctrl_lookup_state(mdcldma_pinctrl, "RFIC0_04_mode");
-	pinctrl_select_state(mdcldma_pinctrl, RFIC0_04_mode);
-	mutex_unlock(&clk_buf_ctrl_lock);
-#endif
+
 	reg_value = ccci_read32(infra_ao_base, 0x338);
 	reg_value &= ~(0x3 << 2);	/* md1_srcclkena */
 	ccci_write32(infra_ao_base, 0x338, reg_value);

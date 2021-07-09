@@ -12,7 +12,7 @@ config MTK_CCCI_DRIVER # CCCI_DRIVER
 	tristate "CCCI Driver"
 	depends on MTK_CCCI_DEVICES
 	default n
-    help
+	help
 	  This option enables ccci device driver support
 	  If yes, ccci driver is enabled,
 	  If no, ccci driver is disabled.
