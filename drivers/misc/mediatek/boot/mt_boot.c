@@ -112,8 +112,8 @@ static ssize_t meta_com_type_store(struct device_driver *driver, const char *buf
 	return count;
 }
 
-DRIVER_ATTR(meta_com_type_info, 0644, meta_com_type_show, meta_com_type_store);
-
+//DRIVER_ATTR(meta_com_type_info, 0644, meta_com_type_show, meta_com_type_store);
+static DRIVER_ATTR_RW(meta_com_type);
 
 static ssize_t meta_com_id_show(struct device_driver *driver, char *buf)
 {
@@ -126,7 +126,8 @@ static ssize_t meta_com_id_store(struct device_driver *driver, const char *buf, 
 	return count;
 }
 
-DRIVER_ATTR(meta_com_id_info, 0644, meta_com_id_show, meta_com_id_store);
+//DRIVER_ATTR(meta_com_id_info, 0644, meta_com_id_show, meta_com_id_store);
+static DRIVER_ATTR_RW(meta_com_id);
 static ssize_t meta_uart_port_show(struct device_driver *driver, char *buf)
 {
 	return sprintf(buf, "%d\n", g_meta_uart_port);
@@ -138,8 +139,8 @@ static ssize_t meta_uart_port_store(struct device_driver *driver, const char *bu
 	return count;
 }
 
-DRIVER_ATTR(meta_uart_port_info, 0644, meta_uart_port_show, meta_uart_port_store);
-
+//DRIVER_ATTR(meta_uart_port_info, 0644, meta_uart_port_show, meta_uart_port_store);
+static DRIVER_ATTR_RW(meta_uart_port);
 
 static int __init create_sysfs(void)
 {
@@ -170,14 +171,14 @@ static int __init create_sysfs(void)
 		if (ret)
 			pr_warn("fail to register META COM TYPE driver\n");
 		ret =
-		    driver_create_file(&meta_com_type_info.driver, &driver_attr_meta_com_type_info);
+		    driver_create_file(&meta_com_type_info.driver, &driver_attr_meta_com_type);
 		if (ret)
 			pr_warn("fail to create META COM TPYE sysfs file\n");
 
 		ret = driver_register(&meta_com_id_info.driver);
 		if (ret)
 			pr_warn("fail to register META COM ID driver\n");
-		ret = driver_create_file(&meta_com_id_info.driver, &driver_attr_meta_com_id_info);
+		ret = driver_create_file(&meta_com_id_info.driver, &driver_attr_meta_com_id);
 		if (ret)
 			pr_warn("fail to create META COM ID sysfs file\n");
 		ret = driver_register(&meta_uart_port_info.driver);
@@ -185,7 +186,7 @@ static int __init create_sysfs(void)
 			pr_warn("fail to register META UART PORT driver\n");
 		ret =
 		    driver_create_file(&meta_uart_port_info.driver,
-				       &driver_attr_meta_uart_port_info);
+				       &driver_attr_meta_uart_port);
 		if (ret)
 			pr_warn("fail to create META UART PORT sysfs file\n");
 	}
