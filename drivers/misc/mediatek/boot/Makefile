@@ -11,17 +11,5 @@
 # GNU General Public License for more details.
 #
 
-
-ifeq ($(CONFIG_MTK_ECCCI_C2K), y)
-
-obj-$(CONFIG_MTK_ECCCI_C2K) += c2k_usb.o
-
-c2k_usb-y := f_rawbulk.o
-c2k_usb-y := rawbulk.o rawbulk_transfer.o
-#c2k_usb-y := rawbulk_transfer.o
-
-else
-
-obj- :=dummy.o
-
-endif
+obj-$(CONFIG_MTK_BOOT) += BOOT_COMMON.o
+BOOT_COMMON-$(CONFIG_MTK_BOOT) := mt_boot_common.o mt_boot.o

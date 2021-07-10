@@ -30,4 +30,5 @@ obj-$(CONFIG_MTK_COMBO) += connectivity/
 obj-$(CONFIG_MTK_BTIF) += btif/
 obj-$(CONFIG_MTK_CONN_MD) += conn_md/
 obj-$(CONFIG_LCT_SIM_CHECK) += sim_check/
+obj-y += boot/
 #obj-y  += wmt_ccci/

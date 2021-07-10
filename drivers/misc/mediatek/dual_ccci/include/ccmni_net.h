@@ -115,7 +115,6 @@ len_n stands for the length of RX memory's Data field of Buffer[n] (not includin
 #include <linux/etherdevice.h>
 #include <linux/skbuff.h>
 #include <linux/bitops.h>
-#include <linux/wakelock.h>
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/delay.h>

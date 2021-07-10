@@ -426,9 +426,9 @@ static int ccif_check_flow_ctrl(struct ccci_modem *md, struct md_ccif_queue *que
 	return ret;
 }
 
-static void md_ccif_traffic_monitor_func(unsigned long data)
+static void md_ccif_traffic_monitor_func(struct timer_list *t)
 {
-	struct ccci_modem *md = (struct ccci_modem *)data;
+	struct ccci_modem *md = from_timer(md, t, traffic_monitor);
 	struct md_ccif_ctrl *md_ctrl = (struct md_ccif_ctrl *)md->private_data;
 
 	ccci_md_dump_port_status(md);
@@ -644,7 +644,7 @@ static irqreturn_t md_cd_wdt_isr(int irq, void *data)
 	CCCI_NORMAL_LOG(md->index, TAG, "MD WDT IRQ\n");
 	ccci_event_log("md%d: MD WDT IRQ\n", md->index);
 
-	wake_lock_timeout(&md_ctrl->trm_wake_lock, 10 * HZ);
+	__pm_wakeup_event(md_ctrl->trm_wake_lock, jiffies_to_msecs(10 * HZ));
 	ccci_md_exception_notify(md, MD_WDT);
 	return IRQ_HANDLED;
 }
@@ -1588,12 +1588,14 @@ static int md_ccif_probe(struct platform_device *dev)
 	md_ctrl = (struct md_ccif_ctrl *)md->private_data;
 	md_ctrl->hw_info = md_hw;
 	snprintf(md_ctrl->wakelock_name, sizeof(md_ctrl->wakelock_name), "md%d_ccif_trm", md_id + 1);
-	wake_lock_init(&md_ctrl->trm_wake_lock, WAKE_LOCK_SUSPEND, md_ctrl->wakelock_name);
+	if((md_ctrl->trm_wake_lock = wakeup_source_create(md_ctrl->wakelock_name)))
+        wakeup_source_add(md_ctrl->trm_wake_lock);
+
 	tasklet_init(&md_ctrl->ccif_irq_task, md_ccif_irq_tasklet, (unsigned long)md);
 	INIT_WORK(&md_ctrl->ccif_sram_work, md_ccif_sram_rx_work);
-	init_timer(&md_ctrl->traffic_monitor);
-	md_ctrl->traffic_monitor.function = md_ccif_traffic_monitor_func;
-	md_ctrl->traffic_monitor.data = (unsigned long)md;
+	timer_setup(&md_ctrl->traffic_monitor, md_ccif_traffic_monitor_func, 0);
+	//md_ctrl->traffic_monitor.function = md_ccif_traffic_monitor_func;
+	//md_ctrl->traffic_monitor.data = (unsigned long)md;
 
 	md_ctrl->channel_id = 0;
 	atomic_set(&md_ctrl->reset_on_going, 1);

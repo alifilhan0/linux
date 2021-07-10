@@ -232,6 +232,8 @@ struct md_cd_ctrl {
 	void __iomem *md_global_con0;
 	void __iomem *ap_ccif_base;
 	void __iomem *md_ccif_base;
+   // uintptr_t ap_ccif_base;
+   // uintptr_t md_ccif_base;
 #ifdef MD_PEER_WAKEUP
 	void __iomem *md_peer_wakeup;
 #endif

@@ -3023,7 +3023,7 @@ static int md_cd_send_runtime_data(struct ccci_modem *md, unsigned int tx_ch, un
 	runtime->index = 0;
 	runtime->next = 0;
 	/* 32K clock less */
-/*#if defined(ENABLE_32K_CLK_LESS)
+#if defined(ENABLE_32K_CLK_LESS)
 	if (crystal_exist_status()) {
 		CCCI_DEBUG_LOG(md->index, TAG, "MISC_32K_LESS no support, crystal_exist_status 1\n");
 		runtime->support_mask |= (FEATURE_NOT_SUPPORT << (MISC_32K_LESS * 2));
@@ -3034,8 +3034,7 @@ static int md_cd_send_runtime_data(struct ccci_modem *md, unsigned int tx_ch, un
 #else
 	CCCI_DEBUG_LOG(md->index, TAG, "ENABLE_32K_CLK_LESS disabled\n");
 	runtime->support_mask |= (FEATURE_NOT_SUPPORT << (MISC_32K_LESS * 2));
-#endif*/
-
+#endif
 	/* random seed */
 	get_random_bytes(&random_seed, sizeof(int));
 	runtime->feature_2_val[0] = random_seed;

@@ -80,7 +80,7 @@ static int __ccif_v1_dump_reg(struct ccif_t *ccif, unsigned int buf[], int len)
 	for (i = 0; i < 16; i++) {
 		CCCI_DBG_MSG(ccif->m_md_id, "cci",
 			     "%08X: %08X %08X %08X %08X\n",
-			     (unsigned int)curr_ccif_smem_addr,
+			     (unsigned long int)curr_ccif_smem_addr,
 			     curr_ccif_smem_addr[0], curr_ccif_smem_addr[1],
 			     curr_ccif_smem_addr[2], curr_ccif_smem_addr[3]);
 		curr_ccif_smem_addr += 4;

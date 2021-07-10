@@ -28,6 +28,7 @@
  *
  ****************************************************************************/
 #include <linux/module.h>
+#include <linux/sched/debug.h>
 #include <linux/sched.h>
 #include <linux/device.h>
 #include <linux/cdev.h>
@@ -42,7 +43,6 @@
 #include <linux/syscalls.h>
 #include <linux/timer.h>
 #include <linux/delay.h>
-#include <linux/wakelock.h>
 #include <linux/rtc.h>
 #include <linux/atomic.h>
 #include <linux/random.h>
@@ -73,7 +73,7 @@ struct md_ctl_block_t {
 	struct smem_alloc_t *smem_table;
 	struct ccci_mem_layout_t *md_layout;
 	/*  -- TRM wake lock */
-	struct wake_lock trm_wake_lock;
+	struct wakeup_source *trm_wake_lock;
 	char wakelock_name[16];
 	/*  -- Timer */
 	struct timer_list md_ex_monitor;
@@ -90,8 +90,8 @@ struct md_ctl_block_t {
 
 static struct md_ctl_block_t  *md_ctlb[MAX_MD_NUM];
 
-static void ex_monitor_func(unsigned long);
-static void md_boot_up_timeout_func(unsigned long);
+//static void ex_monitor_func(unsigned long);
+//static void md_boot_up_timeout_func(unsigned long);
 
 /* -------------------external variable and function define--------------*/
 #ifndef ENABLE_SW_MEM_REMAP
@@ -595,7 +595,7 @@ static void ccci_mem_dump(void *start_addr, int len)
 		return;
 	}
 
-	CCCI_DBG_COM_MSG("Base: %08x\n", (unsigned int)start_addr);
+	CCCI_DBG_COM_MSG("Base: %08x\n", (long unsigned int)start_addr);
 	/*  Fix section */
 	for (i = 0; i < _16_fix_num; i++) {
 		CCCI_DBG_COM_MSG("%03X: %08X %08X %08X %08X\n",
@@ -626,21 +626,21 @@ void ccci_ee_info_dump(int md_id, struct DEBUG_INFO_T *debug_info)
 	char i_bit_ex_info[EE_BUF_LEN] = "\n[Others] May I-Bit dis too long\n";
 
 	struct rtc_time tm;
-	struct timeval tv = { 0 };
-	struct timeval tv_android = { 0 };
+	struct timespec64 tv = { 0 };
+	struct timespec64 tv_android = { 0 };
 	struct rtc_time tm_android;
 
-	do_gettimeofday(&tv);
+	ktime_get_real_ts64(&tv);
 	tv_android = tv;
-	rtc_time_to_tm(tv.tv_sec, &tm);
+	rtc_time64_to_tm(tv.tv_sec, &tm);
 	tv_android.tv_sec -= sys_tz.tz_minuteswest * 60;
-	rtc_time_to_tm(tv_android.tv_sec, &tm_android);
+	rtc_time64_to_tm(tv_android.tv_sec, &tm_android);
 	CCCI_MSG_INF(md_id, "cci",
 		     "Sync:%d%02d%02d %02d:%02d:%02d.%u(%02d:%02d:%02d.%03d(TZone))\n",
 		     tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
-		     tm.tm_min, tm.tm_sec, (unsigned int)tv.tv_usec,
+		     tm.tm_min, tm.tm_sec, (unsigned int)tv.tv_nsec/1000,
 		     tm_android.tm_hour, tm_android.tm_min, tm_android.tm_sec,
-		     (unsigned int)tv_android.tv_usec);
+		     (unsigned int)tv_android.tv_nsec/1000);
 
 	CCCI_MSG_INF(md_id, "cci", "exception type(%d):%s\n", debug_info->type,
 		     debug_info->name ? : "Unknown");
@@ -790,7 +790,7 @@ void ccci_ee_info_dump(int md_id, struct DEBUG_INFO_T *debug_info)
 	/*  Dump MD image memory */
 	CCCI_DBG_MSG(md_id, "cci", "\n\n");
 	CCCI_DBG_MSG(md_id, "cci", "Dump MD%d layout struct\n", md_id + 1);
-	ccci_mem_dump((int *)md_ctlb[md_id]->md_layout,
+	ccci_mem_dump((long int *)md_ctlb[md_id]->md_layout,
 		      sizeof(struct ccci_mem_layout_t));
 
 	/*  Dump Logical layer info */
@@ -1186,7 +1186,7 @@ static void ccci_md_exception(int md_id, struct DEBUG_INFO_T *debug_info)
 	debug_info->md_size = MD_IMG_DUMP_SIZE;
 }
 
-static void ex_monitor_func(unsigned long data)
+static void ex_monitor_func(struct timer_list *t)
 {
 	/* int                md_ex_get, md_ex_ok_get;  */
 	/* int                trusted = 0; */
@@ -1196,7 +1196,7 @@ static void ex_monitor_func(unsigned long data)
 	int need_update_state = 0;
 	unsigned long flags;
 	unsigned int ee_info_flag;
-	struct md_ctl_block_t *md_ctlb = (struct md_ctl_block_t *) data;
+	struct md_ctl_block_t *md_ctlb = from_timer(md_ctlb, t, md_ex_monitor);
 	struct DEBUG_INFO_T debug_info;
 
 	spin_lock_irqsave(&md_ctlb->ctl_lock, flags);
@@ -1591,9 +1591,9 @@ void ccci_stop_bootup_timer(int md_id)
 	del_timer(&ctl_b->md_boot_up_check_timer);
 	/*CCCI_MSG_INF(md_id, "ctl", "%s!\n", __func__);*/
 }
-static void md_boot_up_timeout_func(unsigned long data)
+static void md_boot_up_timeout_func(struct timer_list *t)
 {
-	struct md_ctl_block_t *ctl_b = (struct md_ctl_block_t *) data;
+	struct md_ctl_block_t *ctl_b = from_timer(ctl_b, t, md_boot_up_check_timer);
 	int md_id = ctl_b->m_md_id;
 	char ex_info[EE_BUF_LEN] = "";
 
@@ -2118,7 +2118,7 @@ int send_md_reset_notify(int md_id)
 	/* if( (ret < 0)&&(ret != -CCCI_ERR_MD_IN_RESET) ) */
 	if (ret < 0)
 		return ret;
-	wake_lock_timeout(&ctl_b->trm_wake_lock, 10 * HZ);
+	__pm_wakeup_event(ctl_b->trm_wake_lock, jiffies_to_msecs(10 * HZ));
 	ccci_system_message(md_id, CCCI_MD_MSG_RESET, 0);
 
 	return 0;
@@ -2713,16 +2713,16 @@ int ccci_md_ctrl_init(int md_id)
 	}
 	snprintf(ctlb->wakelock_name, sizeof(ctlb->wakelock_name), "ccci%d_trm",
 		 (md_id + 1));
-	wake_lock_init(&ctlb->trm_wake_lock, WAKE_LOCK_SUSPEND,
-		       ctlb->wakelock_name);
+	if((ctlb->trm_wake_lock = wakeup_source_create(ctlb->wakelock_name)))
+        wakeup_source_add(ctlb->trm_wake_lock);
 
 	/*  Timer init */
-	init_timer(&ctlb->md_ex_monitor);
-	ctlb->md_ex_monitor.function = ex_monitor_func;
-	ctlb->md_ex_monitor.data = (unsigned long)ctlb;
-	init_timer(&ctlb->md_boot_up_check_timer);
-	ctlb->md_boot_up_check_timer.function = md_boot_up_timeout_func;
-	ctlb->md_boot_up_check_timer.data = (unsigned long)ctlb;
+	timer_setup(&ctlb->md_ex_monitor, ex_monitor_func, 0);
+	//ctlb->md_ex_monitor.function = ex_monitor_func;
+	//ctlb->md_ex_monitor.data = (unsigned long)ctlb;
+	timer_setup(&ctlb->md_boot_up_check_timer, md_boot_up_timeout_func, 0);
+	//ctlb->md_boot_up_check_timer.function = md_boot_up_timeout_func;
+	//ctlb->md_boot_up_check_timer.data = (unsigned long)ctlb;
 
 	spin_lock_init(&ctlb->ctl_lock);
 	ctlb->ee_info_got = 0;
@@ -2798,7 +2798,7 @@ void ccci_md_ctrl_exit(int md_id)
 
 	if (ctlb == NULL)
 		return;
-	wake_lock_destroy(&ctlb->trm_wake_lock);
+	wakeup_source_destroy(ctlb->trm_wake_lock);
 	ccci_stop_bootup_timer(md_id);
 	/* ccci_free_smem(md_id); */
 	tasklet_kill(&ctlb->md_notifier.tasklet);

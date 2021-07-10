@@ -42,7 +42,6 @@
 #include <linux/rwlock.h>
 #include <linux/bitops.h>
 #include <linux/sched.h>
-#include <linux/wakelock.h>
 #include "ccci_ch.h"
 #include "ccif.h"
 
@@ -231,7 +230,7 @@ struct logic_dispatch_ctl_block_t {
 	unsigned char m_freezed;
 	unsigned char m_running;
 	unsigned int m_md_id;
-	struct wake_lock m_wakeup_wake_lock;
+	struct wakeup_source *m_wakeup_wake_lock;
 	char m_wakelock_name[16];
 	void (*m_send_notify_cb)(int, unsigned int);
 	u64 m_last_send_ref_jiffies;

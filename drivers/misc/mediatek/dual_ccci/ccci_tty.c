@@ -30,7 +30,6 @@
 #include <linux/sched.h>
 #include <linux/module.h>
 #include <linux/device.h>
-#include <linux/wakelock.h>
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/wait.h>
@@ -52,7 +51,7 @@ struct tty_instance_t {
 	int uart_tx;
 	int uart_rx_ack;
 	int idx;
-	struct wake_lock wake_lock;
+	struct wakeup_source *wake_lock;
 	char wakelock_name[16];
 	wait_queue_head_t write_waitq;
 	wait_queue_head_t read_waitq;
@@ -165,9 +164,9 @@ static void ccci_tty_callback(void *private)
 				wake_up_interruptible_poll(&ctlb->
 							   ccci_tty_meta.poll_waitq_r,
 							   POLLIN);
-				wake_lock_timeout(&ctlb->
+				__pm_wakeup_event(ctlb->
 						  ccci_tty_meta.wake_lock,
-						  HZ / 2);
+						  jiffies_to_msecs(HZ / 2));
 			}
 			break;
 
@@ -191,9 +190,9 @@ static void ccci_tty_callback(void *private)
 				wake_up_interruptible_poll
 				    (&ctlb->ccci_tty_modem.poll_waitq_r,
 				     POLLIN);
-				wake_lock_timeout(&ctlb->
+				__pm_wakeup_event(ctlb->
 						  ccci_tty_modem.wake_lock,
-						  HZ / 2);
+						  jiffies_to_msecs(HZ / 2));
 			}
 			break;
 
@@ -214,8 +213,8 @@ static void ccci_tty_callback(void *private)
 				wake_up_interruptible_poll(&ctlb->
 							   ccci_tty_ipc.poll_waitq_r,
 							   POLLIN);
-				wake_lock_timeout(&ctlb->ccci_tty_ipc.wake_lock,
-						  HZ / 2);
+				__pm_wakeup_event(ctlb->ccci_tty_ipc.wake_lock,
+						  jiffies_to_msecs(HZ / 2));
 			}
 			break;
 #ifdef CONFIG_MTK_ICUSB_SUPPORT
@@ -236,9 +235,9 @@ static void ccci_tty_callback(void *private)
 				wake_up_interruptible_poll
 				    (&ctlb->ccci_tty_icusb.poll_waitq_r,
 				     POLLIN);
-				wake_lock_timeout(&ctlb->
+				__pm_wakeup_event(ctlb->
 						  ccci_tty_icusb.wake_lock,
-						  HZ / 2);
+						  jiffies_to_msecs(HZ / 2));
 			}
 			break;
 #endif
@@ -278,14 +277,14 @@ static ssize_t ccci_tty_read(struct file *file, char *buf, size_t count,
 {
 	struct tty_instance_t *tty_instance = (struct tty_instance_t *) file->private_data;
 
-	int part = 0, size = 0, ret = 0;
+	int __maybe_unused part = 0, size = 0, ret = 0;
 	int value;
 	unsigned read, write, length;
-	struct ccci_msg_t msg;
+	struct __maybe_unused ccci_msg_t msg;
 	char *rx_buffer;
 	int md_id = tty_instance->m_md_id;
 	int data_be_read;
-	char *u_buf = buf;
+	char __maybe_unused*u_buf = buf;
 #ifdef DUMP_CHANNEL_DATA
 	char dump_buf[DUMP_BUF_SIZE] = {0};
 #endif
@@ -334,7 +333,7 @@ static ssize_t ccci_tty_read(struct file *file, char *buf, size_t count,
 		data_be_read = size;
 	/* copy_to_user may be scheduled,  */
 	/* So add 0.5s wake lock to make sure ccci user can be running. */
-	wake_lock_timeout(&tty_instance->wake_lock, HZ / 2);
+	__pm_wakeup_event(tty_instance->wake_lock, jiffies_to_msecs(HZ / 2));
 	if ((read + data_be_read) >= length) {
 		/*  Need read twice */
 
@@ -343,8 +342,8 @@ static ssize_t ccci_tty_read(struct file *file, char *buf, size_t count,
 		if (copy_to_user(u_buf, &rx_buffer[read], part)) {
 			CCCI_MSG_INF(md_id, "tty",
 				     "read: copy_to_user fail:u_buf=%08x,rx_buffer=0x%08x,read=%d,size=%d ret=%d line=%d\n",
-				     (unsigned int)u_buf,
-				     (unsigned int)rx_buffer, read, part, ret,
+				     (long unsigned int)u_buf,
+				     (long unsigned int)rx_buffer, read, part, ret,
 				     __LINE__);
 
 			ret = -EFAULT;
@@ -358,8 +357,8 @@ static ssize_t ccci_tty_read(struct file *file, char *buf, size_t count,
 		if (copy_to_user(&u_buf[part], rx_buffer, data_be_read - part)) {
 			CCCI_MSG_INF(md_id, "tty",
 				     "read: copy_to_user fail:u_buf=%08x,rx_buffer=0x%08x,read=%d,size=%d ret=%d line=%d\n",
-				     (unsigned int)u_buf,
-				     (unsigned int)rx_buffer, read,
+				     (long unsigned int)u_buf,
+				     (long unsigned int)rx_buffer, read,
 				     data_be_read - part, ret, __LINE__);
 
 			ret = -EFAULT;
@@ -376,8 +375,8 @@ static ssize_t ccci_tty_read(struct file *file, char *buf, size_t count,
 		if (copy_to_user(u_buf, &rx_buffer[read], data_be_read)) {
 			CCCI_MSG_INF(md_id, "tty",
 				"read: copy_to_user fail:u_buf=%08x,rx_buffer=0x%08x,read=%d,size=%d ret=%d line=%d\n",
-				(unsigned int)u_buf,
-				(unsigned int)rx_buffer, read,
+				(long unsigned int)u_buf,
+				(long unsigned int)rx_buffer, read,
 				data_be_read, ret, __LINE__);
 			ret = -EFAULT;
 			goto out;
@@ -513,8 +512,8 @@ static ssize_t ccci_tty_write(struct file *file, const char __user *buf,
 		if (ret) {
 			CCCI_MSG_INF(md_id, "tty",
 				     "write: copy from user fail:tx_buffer=0x%08x,write=%d, buf=%08x, part=%d ret=%d line=%d\n",
-				     (unsigned int)tx_buffer, write,
-				     (unsigned int)buf, part, ret, __LINE__);
+				     (long unsigned int)tx_buffer, write,
+				     (long unsigned int)buf, part, ret, __LINE__);
 			ret = -EFAULT;
 			goto out;
 		}
@@ -524,7 +523,7 @@ static ssize_t ccci_tty_write(struct file *file, const char __user *buf,
 		if (ret) {
 			CCCI_MSG_INF(md_id, "tty",
 				     "write: copy from user fail:tx_buffer=0x%08x,buf=%08x,part=%d,data_be_write-part=%d ret=%d line=%d\n",
-				     (unsigned int)tx_buffer, (unsigned int)buf,
+				     (long unsigned int)tx_buffer, (long unsigned int)buf,
 				     part, data_be_write - part, ret, __LINE__);
 			ret = -EFAULT;
 			goto out;
@@ -535,8 +534,8 @@ static ssize_t ccci_tty_write(struct file *file, const char __user *buf,
 		if (ret) {
 			CCCI_MSG_INF(md_id, "tty",
 				     "write: copy from user fail:tx_buffer=0x%08x,write=%d,buf=%08x,data_be_write=%d ret=%d line=%d\n",
-				     (unsigned int)tx_buffer, write,
-				     (unsigned int)buf, data_be_write, ret,
+				     (long unsigned int)tx_buffer, write,
+				     (long unsigned int)buf, data_be_write, ret,
 				     __LINE__);
 			ret = -EFAULT;
 			goto out;
@@ -547,8 +546,8 @@ static ssize_t ccci_tty_write(struct file *file, const char __user *buf,
 	if (ret) {
 		CCCI_MSG_INF(md_id, "tty",
 			"write bk temp: copy from user fail:tx_buffer=0x%08x,write=%d, buf=%08x, part=%d ret=%d line=%d\n",
-			(unsigned int)tx_buffer, write,
-			(unsigned int)buf, part, ret, __LINE__);
+			(long unsigned int)tx_buffer, write,
+			(long unsigned int)buf, part, ret, __LINE__);
 		ret = 0;
 	}
 #endif
@@ -879,8 +878,8 @@ void ccci_tty_instance_init(struct tty_instance_t *instance)
 {
 	rwlock_init(&instance->ccci_tty_rwlock);
 	spin_lock_init(&instance->poll_lock);
-	wake_lock_init(&instance->wake_lock, WAKE_LOCK_SUSPEND,
-		       instance->wakelock_name);
+	if((instance->wake_lock = wakeup_source_create(instance->wakelock_name)))
+        wakeup_source_add(instance->wake_lock);
 	/* setup_timer(&instance->timer, tty_timer_func, instance); */
 	mutex_init(&instance->ccci_tty_mutex);
 	init_waitqueue_head(&instance->read_waitq);
@@ -1131,11 +1130,11 @@ void __exit ccci_tty_exit(int md_id)
 		ctlb->uart4_shared_mem = NULL;
 #endif
 
-		wake_lock_destroy(&ctlb->ccci_tty_modem.wake_lock);
-		wake_lock_destroy(&ctlb->ccci_tty_meta.wake_lock);
-		wake_lock_destroy(&ctlb->ccci_tty_ipc.wake_lock);
+		wakeup_source_destroy(ctlb->ccci_tty_modem.wake_lock);
+		wakeup_source_destroy(ctlb->ccci_tty_meta.wake_lock);
+		wakeup_source_destroy(ctlb->ccci_tty_ipc.wake_lock);
 #ifdef CONFIG_MTK_ICUSB_SUPPORT
-		wake_lock_destroy(&ctlb->ccci_tty_icusb.wake_lock);
+		wakeup_source_destroy(ctlb->ccci_tty_icusb.wake_lock);
 #endif
 
 		kfree(ctlb);

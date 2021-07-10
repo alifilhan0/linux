@@ -129,7 +129,7 @@ typedef struct IPC_MSGSVC_TASKMAP_STRUCT {
 extern int __init ccci_ipc_init(int);
 extern void __exit ccci_ipc_exit(int);
 
-#define offset_of(type, mem)  ((uint32)(&(((type *)0)->mem)))
+#define offset_of(type, mem)  ((uintptr_t)(&(((type *)0)->mem)))
 #define CCCI_IPC_SMEM_SIZE  (sizeof(CCCI_IPC_MEM))
 
 #endif				/*__CCCI_IPC_H__ */

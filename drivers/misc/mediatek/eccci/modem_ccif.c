@@ -35,7 +35,6 @@
 #include <linux/netdevice.h>
 #include <linux/random.h>
 #include <linux/platform_device.h>
-#include <mach/mt_boot.h>
 #include <mt-plat/mt_ccci_common.h>
 #ifdef CONFIG_OF
 #include <linux/of.h>
@@ -49,7 +48,6 @@
 #include "ccci_bm.h"
 #include "ccci_platform.h"
 #include "modem_ccif.h"
-#include "ccif_platform.h"
 #if defined(ENABLE_32K_CLK_LESS)
 #include <mt-plat/mtk_rtc.h>
 #endif

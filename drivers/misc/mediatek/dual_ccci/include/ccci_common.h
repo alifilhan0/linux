@@ -49,6 +49,7 @@
 #define CCCI_DBG_COM_MSG(fmt, args...)        pr_warn("[com] (0)" fmt, ##args)
 #define CCCI_ERR(fmt, args...)        pr_err("[err] (0)" fmt, ##args)
 #define CCCI_ERR_INF(idx, tag, fmt, args...)    pr_err("[" tag "] (%d)" fmt, (idx+1), ##args)
+#define CCCI_ERR_MSG(idx, tag, fmt, args...) pr_err("[ccci%d/err/" tag "]" fmt, (idx+1), ##args)
 
 /*---------------------------Switchable log--------------------------------*/
 /* Debug message switch */
@@ -471,6 +472,7 @@ extern int legacy_boot_md_show(int md_id, char *buf, int size);
 extern int legacy_boot_md_store(int md_id);
 
 int ccci_load_firmware_helper(int md_id, char img_err_str[], int len);/* Platform code export */
+extern int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid);
 
 #ifdef ENABLE_GPS_MD_COCLK
 extern unsigned int wmt_get_coclock_setting_for_ccci(void);

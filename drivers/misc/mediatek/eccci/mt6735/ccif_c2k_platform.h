@@ -15,7 +15,6 @@
 #define __CCIF_PLATFORM_H__
 #include "ccci_config.h"
 #include "ccci_modem.h"
-#include <mach/sync_write.h>
 
 #define ccif_write32(b, a, v)           mt_reg_sync_writel(v, (b)+(a))
 #define ccif_write16(b, a, v)           mt_reg_sync_writew(v, (b)+(a))
@@ -97,5 +96,6 @@ extern void mt_irq_set_sens(unsigned int irq, unsigned int sens);
 extern void mt_irq_set_polarity(unsigned int irq, unsigned int polarity);
 extern void mtk_wdt_set_c2k_sysrst(unsigned int flag);
 extern void ccci_mem_dump(int md_id, void *start_addr, int len);
+void dump_c2k_register(struct ccci_modem *md, unsigned int dump_flag);
 
 #endif /*__CLDMA_PLATFORM_H__*/

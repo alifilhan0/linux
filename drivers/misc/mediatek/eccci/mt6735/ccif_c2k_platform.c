@@ -13,16 +13,14 @@
 
 #include <linux/platform_device.h>
 #include <linux/interrupt.h>
-#include <mach/mt_spm_sleep.h>
 #include "ccci_config.h"
 #include "ccci_modem.h"
 #include "ccci_platform.h"
 #include "ccif_c2k_platform.h"
 #include "modem_ccif.h"
 #include "modem_reg_base.h"
+#include <mt-plat/mt_boot_common.h>
 
-#include <mach/upmu_common.h>
-#include <mach/mt_boot.h>
 
 #ifdef CONFIG_OF
 #include <linux/of.h>
@@ -95,10 +93,10 @@ int md_ccif_get_modem_hw_info(struct platform_device *dev_ptr,
 		of_property_read_u32(dev_ptr->dev.of_node, "ccif,capability",
 				     &dev_cfg->capability);
 
-		hw_info->ap_ccif_base = of_iomap(dev_ptr->dev.of_node, 0);
+		hw_info->ap_ccif_base = (unsigned long)of_iomap(dev_ptr->dev.of_node, 0);
 		/*hw_info->md_ccif_base = hw_info->ap_ccif_base+0x1000; */
 		node = of_find_compatible_node(NULL, NULL, "mediatek,MD_CCIF1");
-		hw_info->md_ccif_base = of_iomap(node, 0);
+		hw_info->md_ccif_base = (unsigned long)of_iomap(node, 0);
 
 		hw_info->ap_ccif_irq_id =
 		    irq_of_parse_and_map(dev_ptr->dev.of_node, 0);
@@ -136,10 +134,10 @@ int md_ccif_get_modem_hw_info(struct platform_device *dev_ptr,
 		of_property_read_u32(dev_ptr->dev.of_node, "ccif,capability",
 				     &dev_cfg->capability);
 
-		hw_info->ap_ccif_base = of_iomap(dev_ptr->dev.of_node, 0);
+		hw_info->ap_ccif_base = (unsigned long)of_iomap(dev_ptr->dev.of_node, 0);
 		/*hw_info->md_ccif_base = hw_info->ap_ccif_base+0x1000; */
 		node = of_find_compatible_node(NULL, NULL, "mediatek,MD_CCIF1");
-		hw_info->md_ccif_base = of_iomap(node, 0);
+		hw_info->md_ccif_base = (unsigned long)of_iomap(node, 0);
 
 		hw_info->ap_ccif_irq_id =
 		    irq_of_parse_and_map(dev_ptr->dev.of_node, 0);
@@ -222,14 +220,14 @@ int md_ccif_io_remap_md_side_register(struct ccci_modem *md)
 	switch (md->index) {
 	case MD_SYS2:
 		md_ctrl->md_boot_slave_Vector =
-		    ioremap_nocache(md_ctrl->hw_info->md_boot_slave_Vector,
+		    ioremap(md_ctrl->hw_info->md_boot_slave_Vector,
 				    0x4);
 		md_ctrl->md_boot_slave_Key =
-		    ioremap_nocache(md_ctrl->hw_info->md_boot_slave_Key, 0x4);
+		    ioremap(md_ctrl->hw_info->md_boot_slave_Key, 0x4);
 		md_ctrl->md_boot_slave_En =
-		    ioremap_nocache(md_ctrl->hw_info->md_boot_slave_En, 0x4);
+		    ioremap(md_ctrl->hw_info->md_boot_slave_En, 0x4);
 		md_ctrl->md_rgu_base =
-		    ioremap_nocache(md_ctrl->hw_info->md_rgu_base, 0x40);
+		    ioremap(md_ctrl->hw_info->md_rgu_base, 0x40);
 		break;
 	case MD_SYS3:
 		break;
@@ -306,7 +304,7 @@ int md_ccif_let_md_go(struct ccci_modem *md)
 					 SLEEP_CLK_CON));
 
 		/*step 3: PMIC VTCXO_1 enable */
-		pmic_config_interface(0x0A02, 0xA12E, 0xFFFF, 0x0);
+		//pmic_config_interface(0x0A02, 0xA12E, 0xFFFF, 0x0);
 		/*step 4: reset C2K */
 #if 0
 		ccif_write32(md_ctrl->hw_info->toprgu_base,
@@ -445,7 +443,7 @@ void reset_md1_md3_pccif(struct ccci_modem *md)
 
 		tx_channel++;
 	}
-	/* clear un-ached channel *.
+	/* clear un-ached channel */
 	ccif_write32(hw_info->md1_pccif_base, PCCIF_ACK, ccif_read32(hw_info->md3_pccif_base, PCCIF_BUSY));
 	ccif_write32(hw_info->md3_pccif_base, PCCIF_ACK, ccif_read32(hw_info->md1_pccif_base, PCCIF_BUSY));
 	/* clear SRAM */
@@ -455,8 +453,10 @@ void reset_md1_md3_pccif(struct ccci_modem *md)
 	}
 
 	pr_debug("[C2K] Dump MD1 PCCIF\n");
-	ccci_mem_dump(-1, hw_info->md1_pccif_base, 0x300);
+	ccci_mem_dump(-1, (void *)hw_info->md1_pccif_base, 0x300);
 	pr_debug("[C2K] Dump MD3 PCCIF\n");
-	ccci_mem_dump(-1, hw_info->md3_pccif_base, 0x300);
+	ccci_mem_dump(-1, (void *)hw_info->md3_pccif_base, 0x300);
 }
+
+
 

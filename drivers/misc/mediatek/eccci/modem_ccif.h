@@ -14,7 +14,6 @@
 #ifndef __MODEM_CCIF_H__
 #define __MODEM_CCIF_H__
 
-#include <linux/wakelock.h>
 #include <linux/dmapool.h>
 #include <linux/atomic.h>
 #include <mt-plat/mt_ccci_common.h>
@@ -72,7 +71,7 @@ struct md_ccif_ctrl {
 	unsigned int md_wdt_irq_id;
 	unsigned int sram_size;
 	struct ccif_sram_layout *ccif_sram_layout;
-	struct wake_lock trm_wake_lock;
+	struct wakeup_source *trm_wake_lock;
 	char wakelock_name[32];
 	struct work_struct ccif_sram_work;
 	struct tasklet_struct ccif_irq_task;
