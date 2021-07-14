@@ -31,7 +31,7 @@
 #include <linux/memblock.h>
 #include <mach/emi_mpu.h>
 #include "gps.h"
-#include <linux/of_device.h>
+
 #ifdef pr_fmt
 #undef pr_fmt
 #endif
@@ -72,7 +72,7 @@ typedef unsigned char   UINT8, *PUINT8, **PPUINT8;
 phys_addr_t gGpsEmiPhyBase;
 UINT8 __iomem *pGpsEmibaseaddr = NULL;
 struct gps_emi_dev *devobj = NULL;
-#define EMI_MPU_PROTECTION_IS_READY 0
+#define EMI_MPU_PROTECTION_IS_READY 1
 
 void mtk_wcn_consys_gps_memory_reserve(void)
 {

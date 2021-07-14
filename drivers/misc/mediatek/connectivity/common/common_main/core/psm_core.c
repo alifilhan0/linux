@@ -439,7 +439,7 @@ static INT32 _stp_psm_put_op(MTKSTP_PSM_T *stp_psm, P_OSAL_OP_Q pOpQ, P_OSAL_OP 
 	return 1;
 }
 
-P_OSAL_OP _stp_psm_get_free_op(MTKSTP_PSM_T *stp_psm)
+static P_OSAL_OP _stp_psm_get_free_op(MTKSTP_PSM_T *stp_psm)
 {
 	P_OSAL_OP pOp;
 
@@ -452,7 +452,7 @@ P_OSAL_OP _stp_psm_get_free_op(MTKSTP_PSM_T *stp_psm)
 	return NULL;
 }
 
-INT32 _stp_psm_put_act_op(MTKSTP_PSM_T *stp_psm, P_OSAL_OP pOp)
+static INT32 _stp_psm_put_act_op(MTKSTP_PSM_T *stp_psm, P_OSAL_OP pOp)
 {
 	INT32 bRet = 0;		/* MTK_WCN_BOOL_FALSE; */
 	INT32 bCleanup = 0;	/* MTK_WCN_BOOL_FALSE; */
@@ -697,7 +697,7 @@ _stp_psm_hold_data(MTKSTP_PSM_T *stp_psm, const PUINT8 buffer, const UINT32 len,
 	return len;
 }
 
-INT32 _stp_psm_has_pending_data(MTKSTP_PSM_T *stp_psm)
+static INT32 _stp_psm_has_pending_data(MTKSTP_PSM_T *stp_psm)
 {
 	return osal_fifo_len(&stp_psm->hold_fifo);
 }
@@ -706,7 +706,7 @@ INT32 _stp_psm_release_data(MTKSTP_PSM_T *stp_psm)
 {
 
 	INT32 i = 20;		/*Max buffered packet number */
-	INT32 ret = 0;
+	//INT32 ret = 0;
 	UINT8 type = 0;
 	UINT32 len = 0;
 	UINT8 delimiter[2];
@@ -717,18 +717,18 @@ INT32 _stp_psm_release_data(MTKSTP_PSM_T *stp_psm)
 		/* psm_fifo_lock(stp_psm); */
 		osal_lock_sleepable_lock(&stp_psm->hold_fifo_spinlock_global);
 
-		ret = osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) &type, sizeof(UINT8));
-		ret = osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) &len, sizeof(UINT32));
+		osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) &type, sizeof(UINT8));
+		osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) &len, sizeof(UINT32));
 
 		if (len > STP_PSM_PACKET_SIZE_MAX) {
 			STP_PSM_ERR_FUNC("***psm packet's length too Long!****\n");
 			STP_PSM_INFO_FUNC("***reset psm's fifo***\n");
 		} else {
 			osal_memset(stp_psm->out_buf, 0, STP_PSM_TX_SIZE);
-			ret = osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) stp_psm->out_buf, len);
+		    osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) stp_psm->out_buf, len);
 		}
 
-		ret = osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) delimiter, 2);
+		osal_fifo_out(&stp_psm->hold_fifo, (PUINT8) delimiter, 2);
 
 		if (delimiter[0] == 0xbb && delimiter[1] == 0xbb) {
 			/* osal_buffer_dump(stp_psm->out_buf, "psm->out_buf", len, 32); */
@@ -962,7 +962,7 @@ static inline INT32 _stp_psm_wait_wmt_event_wq(MTKSTP_PSM_T *stp_psm)
 		/* wcn_psm_flag_trigger_collect_ftrace(); */	/* trigger collect SYS_FTRACE */
 		pbuf = "Abnormal PSM flag be set, just collect SYS_FTRACE to DB";
 		len = osal_strlen(pbuf);
-		//stp_dbg_trigger_collect_ftrace(pbuf, len);
+		stp_dbg_trigger_collect_ftrace(pbuf, len);
 		_stp_psm_dbg_out_printk(g_stp_psm_dbg);
 	}
 	retval = STP_PSM_OPERATION_SUCCESS;
@@ -1234,7 +1234,7 @@ static inline INT32 _stp_psm_notify_wmt(MTKSTP_PSM_T *stp_psm, const MTKSTP_PSM_
 
 static inline VOID _stp_psm_stp_is_idle(struct timer_list *t)
 {
-	MTKSTP_PSM_T *stp_psm = from_timer(stp_psm,t,psm_timer.timer);
+	MTKSTP_PSM_T *stp_psm = from_timer(stp_psm, t, psm_timer.timer);
 
 	osal_clear_bit(STP_PSM_WMT_EVENT_DISABLE_MONITOR_RX_HIGH_DENSITY, &stp_psm->flag);
 	_stp_psm_dbg_dmp_in(g_stp_psm_dbg, stp_psm->flag.data, __LINE__);
@@ -1526,9 +1526,9 @@ INT32 stp_psm_disable_by_tx_rx_density(MTKSTP_PSM_T *stp_psm, INT32 dir, INT32 l
 			tx_sum_len += length;
 
 		ktime_get_real_ts64(&tv_now);
-		/* STP_PSM_INFO_FUNC("tv_now:%d.%d tv_end:%d.%d\n", tv_now.tv_sec, tv_now.tv_nsec,
-		 * tv_end.tv_sec,tv_end.tv_nsec); */
-		if (((tv_now.tv_sec == tv_end.tv_sec) && (tv_now.tv_nsec > tv_end.tv_nsec)) ||
+		/* STP_PSM_INFO_FUNC("tv_now:%d.%d tv_end:%d.%d\n", tv_now.tv_sec, tv_now.tv_usec,
+		 * tv_end.tv_sec,tv_end.tv_usec); */
+		if (((tv_now.tv_sec == tv_end.tv_sec) && (tv_now.tv_nsec/1000 > tv_end.tv_nsec/1000)) ||
 		    (tv_now.tv_sec > tv_end.tv_sec)) {
 			STP_PSM_INFO_FUNC("STP speed rx:%d tx:%d\n", rx_sum_len, tx_sum_len);
 			if ((rx_sum_len + tx_sum_len) > RTX_SPEED_THRESHOLD) {

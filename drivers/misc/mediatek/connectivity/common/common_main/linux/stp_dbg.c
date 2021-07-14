@@ -72,19 +72,17 @@ enum {
 };
 #define MTK_WIFI_COMMAND_MAX    (__STP_DBG_COMMAND_MAX - 1)
 
-/*static struct genl_family stp_dbg_gnl_family = {
-	//.id = GENL_ID_GENERATE,
+static struct nla_policy stp_dbg_genl_policy[STP_DBG_ATTR_MAX + 1] = {
+	[STP_DBG_ATTR_MSG] = {.type = NLA_NUL_STRING},
+};
+
+static struct genl_family stp_dbg_gnl_family = {
+	.id = GENL_ID_GENERATE,
 	.hdrsize = 0,
 	.name = STP_DBG_FAMILY_NAME,
 	.version = 1,
 	.maxattr = STP_DBG_ATTR_MAX,
-    .ops = stp_dbg_gnl_ops_array,
-    .n_ops = ARRAY_SIZE(stp_dbg_gnl_ops_array),
-};*/
-
-/* attribute policy */
-static struct nla_policy stp_dbg_genl_policy[STP_DBG_ATTR_MAX + 1] = {
-	[STP_DBG_ATTR_MSG] = {.type = NLA_NUL_STRING},
+	.policy = stp_dbg_genl_policy,
 };
 
 static UINT32 stp_dbg_seqnum;
@@ -161,6 +159,24 @@ UINT32 __weak wmt_plat_read_chipid(VOID)
 }
 
 /* operation definition */
+#if 0
+static struct genl_ops stp_dbg_gnl_ops_bind = {
+	.cmd = STP_DBG_COMMAND_BIND,
+	.flags = 0,
+	.policy = stp_dbg_genl_policy,
+	.doit = stp_dbg_nl_bind,
+	.dumpit = NULL,
+};
+
+static struct genl_ops stp_dbg_gnl_ops_reset = {
+	.cmd = STP_DBG_COMMAND_RESET,
+	.flags = 0,
+	.policy = stp_dbg_genl_policy,
+	.doit = stp_dbg_nl_reset,
+	.dumpit = NULL,
+};
+#endif
+
 static struct genl_ops stp_dbg_gnl_ops_array[] = {
 	{
 		.cmd = STP_DBG_COMMAND_BIND,
@@ -185,14 +201,19 @@ static struct genl_ops stp_dbg_gnl_ops_array[] = {
  */
 static VOID stp_dbg_core_dump_timeout_handler(struct timer_list *t)
 {
+	P_WCN_CORE_DUMP_T dmp = from_timer(dmp,t,dmp_timer.timer);
 
 	STP_DBG_INFO_FUNC(" start\n");
 
-	stp_dbg_set_coredump_timer_state(CORE_DUMP_TIMEOUT);
+	if (dmp) {
+		STP_DBG_WARN_FUNC
+		    (" coredump timer timeout, coredump maybe not finished successfully\n");
+		dmp->sm = CORE_DUMP_TIMEOUT;
+	}
 	stp_btm_notify_coredump_timeout_wq(g_stp_dbg->btm);
-	STP_DBG_WARN_FUNC(" coredump timer timeout, coredump maybe not finished successfully\n");
 
 	STP_DBG_INFO_FUNC(" end\n");
+
 }
 
 /* stp_dbg_core_dump_init - create core dump sys
@@ -340,7 +361,7 @@ static _osal_inline_ INT32 stp_dbg_core_dump_in(P_WCN_CORE_DUMP_T dmp, PUINT8 bu
 		/* show coredump start info on UI */
 		/* osal_dbg_assert_aee("MT662x f/w coredump start", "MT662x firmware coredump start"); */
 #if STP_DBG_AEE_EXP_API
-		aee_kernel_dal_show("CONSYS coredump start ....\n");
+		//aee_kernel_dal_show("CONSYS coredump start ....\n");
 #endif
 		/* parsing data, and check end srting */
 		ret = stp_dbg_core_dump_check_end(buf, len);
@@ -556,20 +577,7 @@ INT32 stp_dbg_core_dump_flush(INT32 rst, MTK_WCN_BOOL coredump_is_timeout)
 
 	/* show coredump end info on UI */
 	/* osal_dbg_assert_aee("MT662x f/w coredump end", "MT662x firmware coredump ends"); */
-#if STP_DBG_AEE_EXP_API
-	if (coredump_is_timeout)
-		aee_kernel_dal_show("++ CONSYS coredump tiemout ,pass received coredump to AEE ++\n");
-	else
-		aee_kernel_dal_show("++ CONSYS coredump get successfully ++\n");
-	/* call AEE driver API */
-#if ENABLE_F_TRACE
-	aed_combo_exception_api(NULL, 0, (const PINT32)pbuf, len, (const PINT8)g_core_dump->info,
-			DB_OPT_FTRACE);
-#else
-	aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)g_core_dump->info);
-#endif
 
-#endif
 
 	/* reset */
 	stp_dbg_core_dump_reset(g_core_dump, STP_CORE_DUMP_TIMEOUT);
@@ -681,21 +689,21 @@ static _osal_inline_ UINT32 stp_dbg_get_chip_id(VOID)
  *
  * Retunr 0 if success
  */
-/*INT32 stp_dbg_trigger_collect_ftrace(PUINT8 pbuf, INT32 len)
+INT32 stp_dbg_trigger_collect_ftrace(PUINT8 pbuf, INT32 len)
 {
 	if (!pbuf)
 		STP_DBG_ERR_FUNC("Parameter error\n");
 
 	if (g_core_dump) {
 		osal_strncpy(&g_core_dump->info[0], pbuf, len);
-		aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)g_core_dump->info);
+		//aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)g_core_dump->info);
 	} else {
 		STP_DBG_INFO_FUNC("g_core_dump is not initialized\n");
-		aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)pbuf);
+		//aed_combo_exception(NULL, 0, (const PINT32)pbuf, len, (const PINT8)pbuf);
 	}
 
 	return 0;
-}*/
+}
 
 #if BTIF_RXD_BE_BLOCKED_DETECT
 MTK_WCN_BOOL stp_dbg_is_btif_rxd_be_blocked(VOID)
@@ -1451,19 +1459,6 @@ INT32 stp_dbg_log_ctrl(UINT32 on)
 	return 0;
 }
 
-static struct genl_family stp_dbg_gnl_family = {
-	//.id = GENL_ID_GENERATE,
-	.hdrsize = 0,
-	.name = STP_DBG_FAMILY_NAME,
-	.version = 1,
-	.maxattr = STP_DBG_ATTR_MAX,
-    .ops = stp_dbg_gnl_ops_array,
-    .n_ops = ARRAY_SIZE(stp_dbg_gnl_ops_array),
-};
-
-
-
-
 static _osal_inline_ VOID stp_dbg_nl_init(VOID)
 {
 #if 0
@@ -1478,7 +1473,7 @@ static _osal_inline_ VOID stp_dbg_nl_init(VOID)
 
 	}
 #endif
-	if (genl_register_family(&stp_dbg_gnl_family) != 0)
+	if (genl_register_family_with_ops(&stp_dbg_gnl_family, stp_dbg_gnl_ops_array) != 0)
 		STP_DBG_ERR_FUNC("%s(): GE_NELINK family registration fail\n", __func__);
 }
 
@@ -2146,12 +2141,6 @@ INT32 stp_dbg_set_host_assert_info(UINT32 drv_type, UINT32 reason, UINT32 en)
 UINT32 stp_dbg_get_host_trigger_assert(VOID)
 {
 	return g_stp_dbg_cpupcr->host_assert_info.assert_from_host;
-}
-
-VOID stp_dbg_set_coredump_timer_state(CORE_DUMP_STA state)
-{
-	if (g_core_dump)
-		g_core_dump->sm = state;
 }
 
 INT32 stp_dbg_set_fw_info(PUINT8 issue_info, UINT32 len, ENUM_STP_FW_ISSUE_TYPE issue_type)

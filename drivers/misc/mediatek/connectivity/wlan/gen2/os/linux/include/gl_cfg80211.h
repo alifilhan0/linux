@@ -190,7 +190,7 @@ typedef enum _ENUM_TESTMODE_LINK_DETECTION_ATTR {
 /* cfg80211 hooks */
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
-			  struct net_device *ndev, enum nl80211_iftype type, struct vif_params *params);
+			  struct net_device *ndev, enum nl80211_iftype type, /*u32 *flags,*/ struct vif_params *params);
 
 int
 mtk_cfg80211_add_key(struct wiphy *wiphy,

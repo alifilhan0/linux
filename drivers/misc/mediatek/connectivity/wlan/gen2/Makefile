@@ -49,7 +49,7 @@ else
     ccflags-y += -DCFG_ENABLE_GTK_FRAME_FILTER=0
 endif
 
-MTK_MET_PROFILING_SUPPORT = no
+MTK_MET_PROFILING_SUPPORT = yes
 ifeq ($(MTK_MET_PROFILING_SUPPORT), yes)
     ccflags-y += -DCFG_SUPPORT_MET_PROFILING=1
 else
@@ -117,10 +117,10 @@ endif
 ccflags-y += -D_HIF_SDIO=1
 
 ccflags-y += -DDBG=0
-ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/os -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/os/linux/include -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/os/linux/hif/ahb/include
-ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/include -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/include/nic -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/include/mgmt
-#ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
-#ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/$(MTK_PLATFORM)/
+ccflags-y += -I$(src)/os -I$(src)/os/linux/include -I$(src)/os/linux/hif/ahb/include
+ccflags-y += -I$(src)/include -I$(src)/include/nic -I$(src)/include/mgmt
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/$(MTK_PLATFORM)/
 
 MODULE_NAME := wlan_gen2
 obj-$(CONFIG_MTK_COMBO_WIFI) += $(MODULE_NAME).o
@@ -134,10 +134,10 @@ OS_DIR      := os/linux/
 HIF_DIR	    := os/linux/hif/ahb/
 NIC_DIR     := nic/
 MGMT_DIR    := mgmt/
-FWCFG_DIR   := $(MTK_PROJECT)/
-#DMA_DIR     := ../../../../platform/$(call lc,$(MTK_PLATFORM))/kernel/drivers/wifi/
-PLAT_DIR     := os/linux/plat/mt6735/
-#HIF_AHB_PDMA := os/linux/hif/ahb/mt6735/
+FWCFG_DIR   := $(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/$(MTK_PROJECT)/
+DMA_DIR     := ../../../../platform/$(call lc,$(MTK_PLATFORM))/kernel/drivers/wifi/
+PLAT_DIR    := os/linux/plat/$(MTK_PLATFORM)/
+HIF_AHB_PDMA := $(HIF_DIR)$(MTK_PLATFORM)/
 #$(call lc,$(MTK_PLATFORM))
 
 
@@ -246,7 +246,7 @@ HIF_AHB_PDMA = $(HIF_DIR)mt8127/
 endif
 HIF_OBJS :=  $(HIF_DIR)arm.o \
              $(HIF_DIR)ahb.o \
-	     $(HIF_DIR)mt6735/ahb_pdma.o
+             $(HIF_DIR)mt6735/ahb_pdma.o
 ifeq ($(CONFIG_ARCH_MT6755), y)
 PLAT_OBJS := $(PLAT_DIR)plat_priv.o
 $(MODULE_NAME)-objs  += $(PLAT_OBJS)
@@ -283,8 +283,8 @@ endif
 # ---------------------------------------------------
 FW_CUSTOMIZATION = y
 ifeq ($(FW_CUSTOMIZATION), y)
-    $(warning fw_config, $(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/mt6735/fw_config.c)
-    ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/connectivity/wlan/gen2/mt6735/fw_config.c),)
+    $(warning fw_config, $(FWCFG_DIR)fw_config.c)
+    ifneq ($(wildcard $(FWCFG_DIR)fw_config.c),)
         $(warning fw_config exist, $(FWCFG_DIR))
         COMMON_OBJS += $(MTK_PROJECT)/fw_config.o
     endif

@@ -3260,14 +3260,14 @@ static int md_cd_dump_info(struct ccci_modem *md, MODEM_DUMP_FLAG flag, void *bu
 #endif
 		md_cd_lock_modem_clock_src(0);
 		CCCI_MEM_LOG_TAG(md->index, TAG, "wdt_enabled=%d\n", atomic_read(&md_ctrl->wdt_enabled));
-		mt_irq_dump_status(md_ctrl->hw_info->md_wdt_irq_id);
+		//mt_irq_dump_status(md_ctrl->hw_info->md_wdt_irq_id);
 	}
 
 	if (flag & DUMP_FLAG_IRQ_STATUS) {
 		CCCI_INF_MSG(md->index, KERN, "Dump AP CLDMA IRQ status\n");
-		mt_irq_dump_status(md_ctrl->cldma_irq_id);
+		//mt_irq_dump_status(md_ctrl->cldma_irq_id);
 		CCCI_INF_MSG(md->index, KERN, "Dump AP CCIF IRQ status\n");
-		mt_irq_dump_status(md_ctrl->ap_ccif_irq_id);
+		//mt_irq_dump_status(md_ctrl->ap_ccif_irq_id);
 	}
 
 	if (flag & DUMP_MD_BOOTUP_STATUS)

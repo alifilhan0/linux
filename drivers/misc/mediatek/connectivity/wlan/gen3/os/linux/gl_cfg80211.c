@@ -390,7 +390,7 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 		rStatus = kalIoctl(prGlueInfo,
 				   wlanoidQueryLinkSpeed, &u4Rate, sizeof(u4Rate), TRUE, FALSE, FALSE, &u4BufLen);
 
-		sinfo->filled |= STATION_INFO_TX_BITRATE;
+		sinfo->filled |= BIT(NL80211_STA_TX_BITRATE;
 
 		if ((rStatus != WLAN_STATUS_SUCCESS) || (u4Rate == 0)) {
 			/*
@@ -400,7 +400,7 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 			sinfo->txrate.legacy = prGlueInfo->u4LinkSpeedCache;
 		} else {
 			/*
-			   sinfo->filled |= STATION_INFO_TX_BITRATE;
+			   sinfo->filled |= BIT(NL80211_STA_TX_BITRATE;
 			 */
 			sinfo->txrate.legacy = u4Rate / 1000;	/* convert from 100bps to 100kbps */
 			prGlueInfo->u4LinkSpeedCache = u4Rate / 1000;
@@ -415,7 +415,7 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 		rStatus = kalIoctl(prGlueInfo,
 				   wlanoidQueryRssi, &i4Rssi, sizeof(i4Rssi), TRUE, FALSE, FALSE, &u4BufLen);
 
-		sinfo->filled |= STATION_INFO_SIGNAL;
+		sinfo->filled |= BIT(NL80211_STA_SIGNAL;
 
 		if ((rStatus != WLAN_STATUS_SUCCESS) || (i4Rssi == PARAM_WHQL_RSSI_MIN_DBM)
 		    || (i4Rssi == PARAM_WHQL_RSSI_MAX_DBM)) {
@@ -432,11 +432,11 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 
 	if (prDevStats) {
 		/* 4. fill RX_PACKETS */
-		sinfo->filled |= STATION_INFO_RX_PACKETS;
+		sinfo->filled |= BIT(NL80211_STA_RX_PACKETS;
 		sinfo->rx_packets = prDevStats->rx_packets;
 
 		/* 5. fill TX_PACKETS */
-		sinfo->filled |= STATION_INFO_TX_PACKETS;
+		sinfo->filled |= BIT(NL80211_STA_TX_PACKETS;
 		sinfo->tx_packets = prDevStats->tx_packets;
 
 		/* 6. fill TX_FAILED */
@@ -458,7 +458,7 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 			u4TotalError = rQueryStaStatistics.u4TxFailCount + rQueryStaStatistics.u4TxLifeTimeoutCount;
 			prDevStats->tx_errors += u4TotalError;
 		}
-		sinfo->filled |= STATION_INFO_TX_FAILED;
+		sinfo->filled |= BIT(NL80211_STA_TX_FAILED;
 		sinfo->tx_failed = prDevStats->tx_errors;
 	}
 
@@ -1410,10 +1410,10 @@ int mtk_cfg80211_remain_on_channel(struct wiphy *wiphy,
 		prMsgChnlReq->ucChannelNum = nicFreq2ChannelNum(chan->center_freq * 1000);
 
 		switch (chan->band) {
-		case IEEE80211_BAND_2GHZ:
+		case NL80211_BAND_2GHZ:
 			prMsgChnlReq->eBand = BAND_2G4;
 			break;
-		case IEEE80211_BAND_5GHZ:
+		case NL80211_BAND_5GHZ:
 			prMsgChnlReq->eBand = BAND_5G;
 			break;
 		default:

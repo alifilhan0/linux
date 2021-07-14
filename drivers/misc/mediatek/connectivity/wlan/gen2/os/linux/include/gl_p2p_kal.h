@@ -177,11 +177,12 @@ kalP2PIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
 
 VOID kalP2PIndicateChannelExpired(IN P_GLUE_INFO_T prGlueInfo, IN P_P2P_CHNL_REQ_INFO_T prChnlReqInfo);
 
+
 VOID
 kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 				 IN P_P2P_CONNECTION_REQ_INFO_T prP2pConnInfo,
 				 IN PUINT_8 pucRxIEBuf, IN UINT_16 u2RxIELen, IN UINT_16 u2StatusReason,
-				 IN WLAN_STATUS eStatus);
+                                 IN WLAN_STATUS eStatus);
 
 VOID kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo, IN P_STA_RECORD_T prCliStaRec, IN BOOLEAN fgIsNew);
 

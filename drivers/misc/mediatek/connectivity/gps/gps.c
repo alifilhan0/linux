@@ -32,13 +32,14 @@
 #include <linux/platform_device.h>
 #include <linux/cdev.h>
 #include <linux/errno.h>
+#include <linux/of.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
 /* #include <linux/xlog.h> */
 #include <linux/printk.h>
 #include <linux/semaphore.h>
 #include <linux/version.h>
-#include <linux/of_device.h>
+
 #ifdef pr_fmt
 #undef pr_fmt
 #endif

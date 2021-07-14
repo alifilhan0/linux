@@ -702,7 +702,7 @@ BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN f
 	prGlueInfo->prP2PInfo->prWdev = gprP2pWdev;
 	/*set_wiphy_dev(gprP2pWdev->wiphy, prDev);*/
 	if (!prGlueInfo->prAdapter->fgEnable5GBand)
-		gprP2pWdev->wiphy->bands[IEEE80211_BAND_5GHZ] = NULL;
+		gprP2pWdev->wiphy->bands[NL80211_BAND_5GHZ] = NULL;
 
 	/* 2.2 wdev initialization */
 	if (fgIsApMode)
@@ -826,8 +826,8 @@ BOOLEAN glP2pCreateWirelessDevice(P_GLUE_INFO_T prGlueInfo)
 	    | BIT(NL80211_IFTYPE_P2P_GO)
 	    | BIT(NL80211_IFTYPE_STATION);
 
-	prWiphy->bands[IEEE80211_BAND_2GHZ] = &mtk_band_2ghz;
-	prWiphy->bands[IEEE80211_BAND_5GHZ] = &mtk_band_5ghz;
+	prWiphy->bands[NL80211_BAND_2GHZ] = &mtk_band_2ghz;
+	prWiphy->bands[NL80211_BAND_5GHZ] = &mtk_band_5ghz;
 
 	prWiphy->mgmt_stypes = mtk_cfg80211_default_mgmt_stypes;
 	prWiphy->max_remain_on_channel_duration = 5000;

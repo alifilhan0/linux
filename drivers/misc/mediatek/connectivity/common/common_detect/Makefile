@@ -1,5 +1,4 @@
 subdir-ccflags-y += -I$(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/dct/dct
-subdir-ccflags-y += -DWMT_PLAT_ALPS=1
 
 COMBO_CHIP_SUPPORT := false
 ifneq ($(filter "MT6620E3",$(CONFIG_MTK_COMBO_CHIP)),)
@@ -22,10 +21,10 @@ ifneq ($(filter "CONSYS_%",$(CONFIG_MTK_COMBO_CHIP)),)
 	subdir-ccflags-y += -D MTK_WCN_SOC_CHIP_SUPPORT
 endif
 
-	ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include
+	ccflags-y += -I$(src)/../common_main/linux/include
 
 ifeq ($(CONFIG_MTK_COMBO),y)
-	ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common//common_detect/drv_init/inc
+	ccflags-y += -I$(src)/drv_init/inc
 	obj-y += mtk_wcn_stub_alps.o
 	obj-y += wmt_gpio.o
 
@@ -44,6 +43,4 @@ ifeq ($(CONFIG_MTK_COMBO),m)
 	mtk_wmt_detect-objs := wmt_detect.o
 	mtk_wmt_detect-objs += sdio_detect.o
 	mtk_wmt_detect-objs += wmt_detect_pwr.o
-	obj-y += drv_init/
-	ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common//common_detect/drv_init/inc
 endif

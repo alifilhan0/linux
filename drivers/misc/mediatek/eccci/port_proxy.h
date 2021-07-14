@@ -239,5 +239,4 @@ static inline int port_proxy_append_fsm_event(struct port_proxy *proxy_p, CCCI_F
 extern int get_md_port_cfg(int md_id, struct ccci_port **ports);
 extern int port_smem_cfg(int md_id, struct ccci_smem_layout *smem_layout);
 extern struct ccci_modem *ccci_md_get_modem_by_id(int md_id);
-extern int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid);
 #endif /* __PORT_PROXY_H__ */

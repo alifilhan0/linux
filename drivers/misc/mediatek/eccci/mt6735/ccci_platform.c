@@ -177,16 +177,16 @@ void ccci_clear_md_region_protection(struct ccci_modem *md)
 	}
 
 	CCCI_NORMAL_LOG(md->index, TAG, "Clear MPU protect MD ROM region<%d>\n", rom_mem_mpu_id);
-	emi_mpu_set_region_protection(0,	/*START_ADDR */
-				      0,	/*END_ADDR */
-				      rom_mem_mpu_id,	/*region */
-				      MPU_ACCESS_PERMISSON_CLEAR);
+	//emi_mpu_set_region_protection(0,	/*START_ADDR */
+	//			      0,	/*END_ADDR */
+	//			      rom_mem_mpu_id,	/*region */
+	//			      MPU_ACCESS_PERMISSON_CLEAR);
 
 	CCCI_NORMAL_LOG(md->index, TAG, "Clear MPU protect MD R/W region<%d>\n", rw_mem_mpu_id);
-	emi_mpu_set_region_protection(0,	/*START_ADDR */
-				      0,	/*END_ADDR */
-				      rw_mem_mpu_id,	/*region */
-				      MPU_ACCESS_PERMISSON_CLEAR);
+	//emi_mpu_set_region_protection(0,	/*START_ADDR */
+	//			      0,	/*END_ADDR */
+	//			      rw_mem_mpu_id,	/*region */
+	//			      MPU_ACCESS_PERMISSON_CLEAR);
 #endif
 }
 
@@ -205,10 +205,10 @@ void ccci_clear_dsp_region_protection(struct ccci_modem *md)
 	}
 
 	CCCI_NORMAL_LOG(md->index, TAG, "Clear MPU protect DSP ROM region<%d>\n", dsp_mem_mpu_id);
-	emi_mpu_set_region_protection(0,	/*START_ADDR */
-				      0,	/*END_ADDR */
-				      dsp_mem_mpu_id,	/*region */
-				      MPU_ACCESS_PERMISSON_CLEAR);
+	//emi_mpu_set_region_protection(0,	/*START_ADDR */
+	//			      0,	/*END_ADDR */
+	//			      dsp_mem_mpu_id,	/*region */
+	//			      MPU_ACCESS_PERMISSON_CLEAR);
 #endif
 }
 
@@ -228,11 +228,9 @@ void ccci_set_ap_region_protection(struct ccci_modem *md)
 		kernel_base = 0;
 	else
 		kernel_base = get_phys_offset();
-#ifdef ENABLE_DRAM_API
-	dram_size = get_max_DRAM_size();
-#else
+
 	dram_size = 256 * 1024 * 1024;
-#endif
+
 	ap_mem_mpu_id = MPU_REGION_ID_AP;
 	ap_mem_mpu_attr = MPU_ACCESS_PERMISSON_AP_ATTR;
 #if 1
@@ -240,8 +238,8 @@ void ccci_set_ap_region_protection(struct ccci_modem *md)
 		ap_mem_mpu_id, (unsigned int)kernel_base, (unsigned int)(kernel_base + dram_size - 1),
 		ap_mem_mpu_attr);
 
-	emi_mpu_set_region_protection((unsigned int)kernel_base,
-		(unsigned int)(kernel_base + dram_size - 1), ap_mem_mpu_id, ap_mem_mpu_attr);
+	//emi_mpu_set_region_protection((unsigned int)kernel_base,
+	//	(unsigned int)(kernel_base + dram_size - 1), ap_mem_mpu_id, ap_mem_mpu_attr);
 #endif
 
 #endif
@@ -272,7 +270,7 @@ void ccci_set_dsp_region_protection(struct ccci_modem *md, int loaded)
 
 	CCCI_NORMAL_LOG(md->index, TAG, "MPU Start protect DSP region<%d:%08x:%08x> %x\n",
 		     dsp_mem_mpu_id, dsp_mem_phy_start, dsp_mem_phy_end, dsp_mem_mpu_attr);
-	emi_mpu_set_region_protection(dsp_mem_phy_start, dsp_mem_phy_end, dsp_mem_mpu_id, dsp_mem_mpu_attr);
+	//emi_mpu_set_region_protection(dsp_mem_phy_start, dsp_mem_phy_end, dsp_mem_mpu_id, dsp_mem_mpu_attr);
 #else
 	if (!loaded) {
 		dsp_mem_phy_start = (unsigned int)md->mem_layout.dsp_region_phy;
@@ -280,7 +278,7 @@ void ccci_set_dsp_region_protection(struct ccci_modem *md, int loaded)
 
 		CCCI_NORMAL_LOG(md->index, TAG, "MPU Start protect DSP region<%d:%08x:%08x> %x\n",
 			     dsp_mem_mpu_id, dsp_mem_phy_start, dsp_mem_phy_end, dsp_mem_mpu_attr);
-		emi_mpu_set_region_protection(dsp_mem_phy_start, dsp_mem_phy_end, dsp_mem_mpu_id, dsp_mem_mpu_attr);
+		//emi_mpu_set_region_protection(dsp_mem_phy_start, dsp_mem_phy_end, dsp_mem_mpu_id, dsp_mem_mpu_attr);
 	} else {
 		unsigned int rom_mem_phy_start, rom_mem_phy_end;
 		unsigned int shr_mem_phy_start, shr_mem_phy_end, shr_mem_mpu_id, shr_mem_mpu_attr;
@@ -307,13 +305,13 @@ void ccci_set_dsp_region_protection(struct ccci_modem *md, int loaded)
 
 		CCCI_NORMAL_LOG(md->index, TAG, "After DSP: MPU Start protect MD Share region<%d:%08x:%08x> %x\n",
 			     shr_mem_mpu_id, shr_mem_phy_start, shr_mem_phy_end, shr_mem_mpu_attr);
-		emi_mpu_set_region_protection(shr_mem_phy_start,	/*START_ADDR */
+		//emi_mpu_set_region_protection(shr_mem_phy_start,	/*START_ADDR */
 					      shr_mem_phy_end,	/*END_ADDR */
 					      shr_mem_mpu_id,	/*region */
 					      shr_mem_mpu_attr);
 		CCCI_NORMAL_LOG(md->index, TAG, "After DSP: MPU Start protect MD R/W region<%d:%08x:%08x> %x\n",
 			     rw_mem_mpu_id, rw_mem_phy_start, rw_mem_phy_end, rw_mem_mpu_attr);
-		emi_mpu_set_region_protection(rw_mem_phy_start,	/*START_ADDR */
+		//emi_mpu_set_region_protection(rw_mem_phy_start,	/*START_ADDR */
 					      rw_mem_phy_end,	/*END_ADDR */
 					      rw_mem_mpu_id,	/*region */
 					      rw_mem_mpu_attr);
@@ -367,11 +365,9 @@ void ccci_set_mem_access_protection(struct ccci_modem *md)
 		kernel_base = 0;
 	else
 		kernel_base = get_phys_offset();
-#ifdef ENABLE_DRAM_API
-	dram_size = get_max_DRAM_size();
-#else
+
 	dram_size = 256 * 1024 * 1024;
-#endif
+
 	ap_mem_mpu_id = MPU_REGION_ID_AP;
 	ap_mem_mpu_attr = MPU_ACCESS_PERMISSON_AP_MD1_RO_ATTR;
 
@@ -393,31 +389,31 @@ void ccci_set_mem_access_protection(struct ccci_modem *md)
 	CCCI_NORMAL_LOG(md->index, TAG, "MPU Start protect MD ROM region<%d:%08x:%08x> %x, invalid_map=0x%llx\n",
 		     rom_mem_mpu_id, rom_mem_phy_start, rom_mem_phy_end, rom_mem_mpu_attr,
 		     (unsigned long long)md->invalid_remap_base);
-	emi_mpu_set_region_protection(rom_mem_phy_start,	/*START_ADDR */
-				      rom_mem_phy_end,	/*END_ADDR */
-				      rom_mem_mpu_id,	/*region */
-				      rom_mem_mpu_attr);
+	//emi_mpu_set_region_protection(rom_mem_phy_start,	/*START_ADDR */
+				      //rom_mem_phy_end,	/*END_ADDR */
+				      //rom_mem_mpu_id,	/*region */
+				      //rom_mem_mpu_attr);
 
 	CCCI_NORMAL_LOG(md->index, TAG, "MPU Start protect MD R/W region<%d:%08x:%08x> %x\n",
 		     rw_mem_mpu_id, rw_mem_phy_start, rw_mem_phy_end, rw_mem_mpu_attr);
-	emi_mpu_set_region_protection(rw_mem_phy_start,	/*START_ADDR */
-				      rw_mem_phy_end,	/*END_ADDR */
-				      rw_mem_mpu_id,	/*region */
-				      rw_mem_mpu_attr);
+	//emi_mpu_set_region_protection(rw_mem_phy_start,	/*START_ADDR */
+				      //rw_mem_phy_end,	/*END_ADDR */
+				      //rw_mem_mpu_id,	/*region */
+				      //rw_mem_mpu_attr);
 #ifndef ENABLE_DSP_SMEM_SHARE_MPU_REGION
 	CCCI_NORMAL_LOG(md->index, TAG, "MPU Start protect MD Share region<%d:%08x:%08x> %x\n",
 		     shr_mem_mpu_id, shr_mem_phy_start, shr_mem_phy_end, shr_mem_mpu_attr);
-	emi_mpu_set_region_protection(shr_mem_phy_start,	/*START_ADDR */
-				      shr_mem_phy_end,	/*END_ADDR */
-				      shr_mem_mpu_id,	/*region */
-				      shr_mem_mpu_attr);
+	//emi_mpu_set_region_protection(shr_mem_phy_start,	/*START_ADDR */
+				      //shr_mem_phy_end,	/*END_ADDR */
+				      //shr_mem_mpu_id,	/*region */
+				      //shr_mem_mpu_attr);
 #endif
 /* This part need to move common part */
 #if 1
 	CCCI_NORMAL_LOG(md->index, TAG, "MPU Start protect AP region<%d:%08x:%08x> %x\n",
 		ap_mem_mpu_id, (unsigned int)kernel_base, (unsigned int)(kernel_base + dram_size - 1), ap_mem_mpu_attr);
-	emi_mpu_set_region_protection((unsigned int)kernel_base, (unsigned int)(kernel_base + dram_size - 1),
-		ap_mem_mpu_id, ap_mem_mpu_attr);
+	//emi_mpu_set_region_protection((unsigned int)kernel_base, (unsigned int)(kernel_base + dram_size - 1),
+		//ap_mem_mpu_id, ap_mem_mpu_attr);
 #endif
 #endif
 }
@@ -434,10 +430,10 @@ void ccci_set_exp_region_protection(struct ccci_modem *md)
 
 	CCCI_NORMAL_LOG(md->index, TAG, "After EE: MPU Start protect MD Share region<%d:%08x:%08x> %x\n",
 		shr_mem_mpu_id, shr_mem_phy_start, shr_mem_phy_end, shr_mem_mpu_attr);
-	emi_mpu_set_region_protection(shr_mem_phy_start,	/*START_ADDR */
-				shr_mem_phy_end,	/*END_ADDR */
-				shr_mem_mpu_id,	/*region */
-				shr_mem_mpu_attr);
+	//emi_mpu_set_region_protection(shr_mem_phy_start,	/*START_ADDR */
+	//			shr_mem_phy_end,	/*END_ADDR */
+	//			shr_mem_mpu_id,	/*region */
+	//			shr_mem_mpu_attr);
 }
 #endif
 

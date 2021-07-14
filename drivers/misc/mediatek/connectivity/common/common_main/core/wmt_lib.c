@@ -535,6 +535,20 @@ INT32 wmt_lib_set_patch_name(PUINT8 cPatchName)
 	return 0;
 }
 
+INT32 wmt_lib_set_uart_name(PINT8 cUartName)
+{
+#if WMT_PLAT_ALPS
+
+	WMT_DBG_FUNC("orig uart: %s\n", wmt_uart_port_desc);
+#endif
+	osal_strncpy(gDevWmt.cUartName, cUartName, NAME_MAX);
+#if WMT_PLAT_ALPS
+	wmt_uart_port_desc = gDevWmt.cUartName;
+	WMT_DBG_FUNC("new uart: %s\n", wmt_uart_port_desc);
+#endif
+	return 0;
+}
+
 INT32 wmt_lib_set_hif(ULONG hifconf)
 {
 	UINT32 val;
@@ -965,10 +979,7 @@ INT32 wmt_lib_ps_stp_cb(MTKSTP_PSM_ACTION_T action)
 
 MTK_WCN_BOOL wmt_lib_is_quick_ps_support(VOID)
 {
-	if ((g_quick_sleep_ctrl) && (wmt_dev_get_early_suspend_state() == MTK_WCN_BOOL_TRUE))
-		return wmt_core_is_quick_ps_support();
-	else
-		return MTK_WCN_BOOL_FALSE;
+	return wmt_core_is_quick_ps_support();
 }
 
 VOID wmt_lib_ps_irq_cb(VOID)
@@ -1238,7 +1249,7 @@ MTK_WCN_BOOL wmt_lib_put_act_op(P_OSAL_OP pOp)
 			/* TODO: how to handle it? retry? */
 			/* wcn_wmtd_timeout_collect_ftrace();*/ /*trigger collect SYS_FTRACE */
 			osal_thread_show_stack(pThread);
-			//stp_dbg_trigger_collect_ftrace(pbuf, len);
+			stp_dbg_trigger_collect_ftrace(pbuf, len);
 		} else {
 			if (pOp->result)
 				WMT_WARN_FUNC("opId(%d) result:%d\n", pOp->op.opId, pOp->result);
@@ -2023,7 +2034,7 @@ UINT8 *wmt_lib_get_fwinfor_from_emi(UINT8 section, UINT32 offset, UINT8 *buf, UI
 			WMT_ERR_FUNC("wmt-lib: get EMI virtual base address fail\n");
 		} else {
 			WMT_INFO_FUNC("vir addr(0x%p)\n", pAddr);
-			osal_memcpy_fromio(&buf[0], pAddr, len);
+			osal_memcpy(&buf[0], pAddr, len);
 		}
 	} else {
 		if (offset >= 0x7fff)
@@ -2036,7 +2047,7 @@ UINT8 *wmt_lib_get_fwinfor_from_emi(UINT8 section, UINT32 offset, UINT8 *buf, UI
 			} else {
 				WMT_INFO_FUNC("part1 vir addr(0x%p)\n", pAddr);
 				sublen1 = 0x7fff - offset;
-				osal_memcpy_fromio(&buf[0], pAddr, sublen1);
+				osal_memcpy(&buf[0], pAddr, sublen1);
 			}
 			pAddr = wmt_plat_get_emi_virt_add(p_consys_info->paged_trace_off);
 			if (!pAddr) {
@@ -2044,7 +2055,7 @@ UINT8 *wmt_lib_get_fwinfor_from_emi(UINT8 section, UINT32 offset, UINT8 *buf, UI
 			} else {
 				WMT_INFO_FUNC("part2 vir addr(0x%p)\n", pAddr);
 				sublen2 = len - sublen1;
-				osal_memcpy_fromio(&buf[sublen1], pAddr, sublen2);
+				osal_memcpy(&buf[sublen1], pAddr, sublen2);
 			}
 		} else {
 			pAddr = wmt_plat_get_emi_virt_add(offset + p_consys_info->paged_trace_off);
@@ -2052,7 +2063,7 @@ UINT8 *wmt_lib_get_fwinfor_from_emi(UINT8 section, UINT32 offset, UINT8 *buf, UI
 				WMT_ERR_FUNC("wmt-lib: get EMI virtual base address fail\n");
 			} else {
 				WMT_INFO_FUNC("vir addr(0x%p)\n", pAddr);
-				osal_memcpy_fromio(&buf[0], pAddr, len);
+				osal_memcpy(&buf[0], pAddr, len);
 			}
 		}
 	}
@@ -2078,20 +2089,21 @@ INT32 wmt_lib_poll_cpupcr(UINT32 count, UINT16 sleep, UINT16 toAee)
 	return 0;
 }
 
+
 INT32 wmt_lib_merge_if_flag_ctrl(UINT32 enable)
 {
-        return wmt_plat_merge_if_flag_ctrl(enable);
+
+	return wmt_plat_merge_if_flag_ctrl(enable);
+
 }
 
 
 INT32 wmt_lib_merge_if_flag_get(UINT32 enable)
 {
-        return wmt_plat_merge_if_flag_get();
+
+	return wmt_plat_merge_if_flag_get();
+
 }
-
-
-
-
 
 
 PUINT8 wmt_lib_get_cpupcr_xml_format(PUINT32 len)

@@ -12,8 +12,8 @@ else
 endif
 
 ccflags-y += \
-	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/include \
-	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include
+	-I$(src)/../common/common_main/include \
+	-I$(src)/../common/common_main/linux/include
 
 obj-$(CONFIG_MTK_COMBO_WIFI) += wmt_chrdev_wifi.o
 

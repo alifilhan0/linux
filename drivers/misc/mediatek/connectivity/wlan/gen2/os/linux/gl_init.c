@@ -32,7 +32,6 @@
 #include <tc1_partition.h>
 #endif
 #include "gl_vendor.h"
-#include <linux/module.h>
 
 #ifdef FW_CFG_SUPPORT
 #include "fwcfg.h"
@@ -1540,11 +1539,11 @@ static int wlanStop(struct net_device *prDev)
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	struct cfg80211_scan_request *prScanRequest = NULL;
 
-        struct cfg80211_scan_info info = {
+	GLUE_SPIN_LOCK_DECLARATION();
+    struct cfg80211_scan_info info = {
                 .aborted = true,
         };
 
-	GLUE_SPIN_LOCK_DECLARATION();
 
 	ASSERT(prDev);
 
@@ -2975,8 +2974,8 @@ static int initWlan(void)
 #endif
 
 	/* Register framebuffer notifier client*/
-	/*if (gprWdev)
-		kalFbNotifierReg((P_GLUE_INFO_T) wiphy_priv(gprWdev->wiphy));*/
+	if (gprWdev)
+		kalFbNotifierReg((P_GLUE_INFO_T) wiphy_priv(gprWdev->wiphy));
 
 	/* Set the initial DEBUG CLASS of each module */
 	return ret;
@@ -2997,7 +2996,7 @@ static VOID exitWlan(void)
 	DBGLOG(INIT, INFO, "exitWlan\n");
 
 	/* Unregister framebuffer notifier client*/
-	/*kalFbNotifierUnReg();*/
+	kalFbNotifierUnReg();
 
 #if CFG_CHIP_RESET_SUPPORT
 	glResetUninit();
@@ -3038,5 +3037,4 @@ module_exit(exitWlan);
 
 MODULE_AUTHOR(NIC_AUTHOR);
 MODULE_DESCRIPTION(NIC_DESC);
-//MODULE_SUPPORTED_DEVICE(NIC_NAME);
 MODULE_LICENSE("GPL");

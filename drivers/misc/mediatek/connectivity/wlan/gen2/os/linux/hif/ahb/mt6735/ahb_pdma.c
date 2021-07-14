@@ -31,9 +31,7 @@
 #include <linux/jiffies.h>	/* jiffies */
 #include <linux/delay.h>	/* udelay and mdelay macro */
 
-/*#if CONFIG_ANDROID
-#include <linux/wakelock.h>
-#endif*/
+
 
 #include <linux/irq.h>		/* IRQT_FALLING */
 

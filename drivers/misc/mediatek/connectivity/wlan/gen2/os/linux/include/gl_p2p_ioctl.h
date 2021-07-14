@@ -301,7 +301,7 @@ extern UINT_32 mtk_cipher_suites[6];
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
 int mtk_p2p_cfg80211_change_iface(struct wiphy *wiphy,
 				  struct net_device *ndev,
-				  enum nl80211_iftype type, /*u32 *flags*/ struct vif_params *params);
+				  enum nl80211_iftype type,/* u32 *flags,*/ struct vif_params *params);
 
 int mtk_p2p_cfg80211_add_key(struct wiphy *wiphy,
 			     struct net_device *ndev,

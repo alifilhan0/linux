@@ -46,6 +46,7 @@
 #include <linux/mmc/host.h>
 #include <linux/mmc/sdio_func.h>
 #include <linux/mmc/sdio_ids.h>
+#include "card.h"
 
 #include <linux/mm.h>
 #include <linux/firmware.h>
@@ -188,7 +189,15 @@ typedef enum {
 ********************************************************************************
 */
 
+#if WMT_PLAT_ALPS
+#ifdef CONFIG_SDIOAUTOK_SUPPORT
+#define MTK_HIF_SDIO_AUTOK_ENABLED 1
+#else
 #define MTK_HIF_SDIO_AUTOK_ENABLED 0
+#endif
+#else
+#define MTK_HIF_SDIO_AUTOK_ENABLED 0
+#endif
 
 /*!
  * \brief A macro used to generate hif_sdio client's context
@@ -332,6 +341,7 @@ extern INT32 mtk_wcn_hif_sdio_do_autok(MTK_WCN_HIF_SDIO_CLTCTX ctx);
 extern INT32 mtk_wcn_hif_sdio_f0_writeb(MTK_WCN_HIF_SDIO_CLTCTX ctx, UINT32 offset, UINT8 vb);
 
 extern INT32 mtk_wcn_hif_sdio_f0_readb(MTK_WCN_HIF_SDIO_CLTCTX ctx, UINT32 offset, PUINT8 pvb);
+
 
 
 #define DELETE_HIF_SDIO_CHRDEV 1

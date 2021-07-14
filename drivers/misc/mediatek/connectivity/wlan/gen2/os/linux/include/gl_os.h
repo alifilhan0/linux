@@ -101,7 +101,9 @@
 /* Define if target platform is Android.
  * It should already be defined in Android kernel source
  */
-
+#ifndef CONFIG_ANDROID
+#define CONFIG_ANDROID      0
+#endif
 
 /* for CFG80211 IE buffering mechanism */
 #define CFG_CFG80211_IE_BUF_LEN		(512)
@@ -120,7 +122,9 @@
 #include <linux/jiffies.h>	/* jiffies */
 #include <linux/delay.h>	/* udelay and mdelay macro */
 
-
+#if CONFIG_ANDROID
+#include <linux/wakelock.h>
+#endif
 
 #include <linux/irq.h>		/* IRQT_FALLING */
 
@@ -139,7 +143,7 @@
 
 #include <linux/rtnetlink.h>	/* for rtnl_lock() and rtnl_unlock() */
 #include <linux/kthread.h>	/* kthread_should_stop(), kthread_run() */
-#include <asm/uaccess.h>	/* for copy_from_user() */
+#include <linux/uaccess.h>	/* for copy_from_user() */
 #include <linux/fs.h>		/* for firmware download */
 #include <linux/vmalloc.h>
 
@@ -147,7 +151,6 @@
 #include <linux/cdev.h>		/* for cdev interface */
 
 #include <linux/firmware.h>	/* for firmware download */
-//#include <linux/fb.h>
 
 #if defined(_HIF_SDIO)
 #include <linux/mmc/sdio.h>
@@ -735,10 +738,9 @@ struct wpa_driver_hs20_data_s {
 	spin_unlock_bh(prLock)
 
 #else /* !CFG_USE_SPIN_LOCK_BOTTOM_HALF */
-#define GLUE_SPIN_LOCK_DECLARATION()
-    unsigned long __u4Flags = 0;
+#define GLUE_SPIN_LOCK_DECLARATION()                        unsigned long __u4Flags = 0
 #define GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, rLockCategory)   \
-	{  \
+	{ \
 		if (rLockCategory < SPIN_LOCK_NUM) \
 			spin_lock_irqsave(&(prGlueInfo)->rSpinLock[rLockCategory], __u4Flags); \
 	}

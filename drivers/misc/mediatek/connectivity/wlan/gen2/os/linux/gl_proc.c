@@ -893,6 +893,7 @@ static ssize_t procfile_write(struct file *filp, const char __user *buffer, size
 	return len;
 }
 	static const struct proc_ops proc_fops = {
+		//.owner = THIS_MODULE,
 		.proc_read = procfile_read,
 		.proc_write = procfile_write,
 	};

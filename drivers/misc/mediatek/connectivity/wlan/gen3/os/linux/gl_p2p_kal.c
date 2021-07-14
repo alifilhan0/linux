@@ -1121,7 +1121,7 @@ kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
 
 			kalMemZero(&rStationInfo, sizeof(rStationInfo));
 
-			rStationInfo.filled = STATION_INFO_ASSOC_REQ_IES;
+			rStationInfo.filled = BIT(NL80211_STA_ASSOC_REQ_IES;
 			rStationInfo.generation = ++prP2pGlueInfo->i4Generation;
 
 			rStationInfo.assoc_req_ies = prCliStaRec->pucAssocReqIe;
@@ -1187,12 +1187,12 @@ struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo
 
 		switch (prChannelInfo->eBand) {
 		case BAND_2G4:
-			prTargetChannelEntry = wiphy->bands[IEEE80211_BAND_2GHZ]->channels;
-			u4TblSize = wiphy->bands[IEEE80211_BAND_2GHZ]->n_channels;
+			prTargetChannelEntry = wiphy->bands[NL80211_BAND_2GHZ]->channels;
+			u4TblSize = wiphy->bands[NL80211_BAND_2GHZ]->n_channels;
 			break;
 		case BAND_5G:
-			prTargetChannelEntry = wiphy->bands[IEEE80211_BAND_5GHZ]->channels;
-			u4TblSize = wiphy->bands[IEEE80211_BAND_5GHZ]->n_channels;
+			prTargetChannelEntry = wiphy->bands[NL80211_BAND_5GHZ]->channels;
+			u4TblSize = wiphy->bands[NL80211_BAND_5GHZ]->n_channels;
 			break;
 		default:
 			break;

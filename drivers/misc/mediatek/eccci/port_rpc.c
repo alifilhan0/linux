@@ -65,13 +65,13 @@ static int get_md_gpio_val(unsigned int num)
 
 static int get_md_adc_val(unsigned int num)
 {
-#if defined(FEATURE_GET_MD_ADC_VAL)
-	int data[4] = { 0, 0, 0, 0 };
+/*#if defined(FEATURE_GET_MD_ADC_VAL)
+	int __maybe_unused data[4] = { 0, 0, 0, 0 };
 	int val = 0;
 	int ret = 0;
 
 	CCCI_DEBUG_LOG(0, RPC, "FEATURE_GET_MD_ADC_VAL\n");
-	ret = IMM_GetOneChannelValue(num, data, &val);
+	//ret = IMM_GetOneChannelValue(num, data, &val);
 	if (ret == 0)
 		return val;
 	else
@@ -79,9 +79,12 @@ static int get_md_adc_val(unsigned int num)
 #elif defined(FEATURE_GET_MD_PMIC_ADC_VAL)
 	CCCI_DEBUG_LOG(0, RPC, "FEATURE_GET_MD_PMIC_ADC_VAL\n");
 	return PMIC_IMM_GetOneChannelValue(num, 1, 0);
-#else
-	return -1;
-#endif
+#else*/
+
+	return ccci_get_adc_val();
+
+//	return -1;
+//#endif
 }
 
 static int get_td_eint_info(char *eint_name, unsigned int len)
@@ -95,15 +98,18 @@ static int get_td_eint_info(char *eint_name, unsigned int len)
 
 static int get_md_adc_info(char *adc_name, unsigned int len)
 {
-#if defined(FEATURE_GET_MD_ADC_NUM)
+/*#if defined(FEATURE_GET_MD_ADC_NUM)
 	CCCI_DEBUG_LOG(0, RPC, "FEATURE_GET_MD_ADC_NUM\n");
-	return IMM_get_adc_channel_num(adc_name, len);
+	//return IMM_get_adc_channel_num(adc_name, len);
 #elif defined(FEATURE_GET_MD_PMIC_ADC_NUM)
 	CCCI_DEBUG_LOG(0, RPC, "FEATURE_GET_MD_PMIC_ADC_NUM\n");
 	return PMIC_IMM_get_adc_channel_num(adc_name, len);
-#else
-	return -1;
-#endif
+#else*/
+
+	return ccci_get_adc_num();
+
+//	return -1;
+//#endif
 }
 
 static int get_md_gpio_info(char *gpio_name, unsigned int len)

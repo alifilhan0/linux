@@ -960,5 +960,7 @@ struct c2k_ctrl_port_msg {
 	unsigned char chan_num;
 	unsigned char option;
 } __packed; /* not necessary, but it's a good gesture, :) */
+int ccci_get_adc_num(void);
+int ccci_get_adc_val(void);
 
 #endif	/* __CCCI_CORE_H__ */

@@ -20,11 +20,11 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-#include <linux/sched/debug.h>
-//#include <linux/fb.h>
 #include "gl_os.h"
 #include "gl_wext.h"
 #include "precomp.h"
+#include <linux/sched/debug.h>
+#include <linux/fb.h>
 #if CFG_TC1_FEATURE
 #include <tc1_partition.h>
 #endif
@@ -79,8 +79,8 @@ static struct KAL_HALT_CTRL_T rHaltCtrl = {
 };
 
 /* framebuffer callback related variable and status flag */
-/*static struct notifier_block wlan_fb_notifier;
-void *wlan_fb_notifier_priv_data = NULL;*/
+static struct notifier_block wlan_fb_notifier;
+void *wlan_fb_notifier_priv_data = NULL;
 BOOLEAN wlan_fb_power_down = FALSE;
 /*******************************************************************************
 *                                 M A C R O S
@@ -110,9 +110,7 @@ typedef enum _ENUM_WMTHWVER_TYPE_T {
 */
 VOID kalHifAhbKalWakeLockTimeout(IN P_GLUE_INFO_T prGlueInfo)
 {
-	//KAL_WAKE_LOCK_TIMEOUT(prGlueInfo->prAdapter, &(prGlueInfo->rAhbIsrWakeLock), (HZ / 10));	/* 100ms */
-    printk(KERN_CRIT "kalHifAhbKalWakeLockTimeout: prGlueInfo->rAhbIsrWakeLock = %px\n", prGlueInfo->rAhbIsrWakeLock);
-
+	KAL_WAKE_LOCK_TIMEOUT(prGlueInfo->prAdapter, &(prGlueInfo->rAhbIsrWakeLock), (HZ / 10));	/* 100ms */
 }
 
 #if CFG_ENABLE_FW_DOWNLOAD
@@ -1004,6 +1002,10 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 	P_BSS_DESC_T prBssDesc = NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+    struct cfg80211_scan_info info = {
+               .aborted = false,
+        };
+
 	kalMemZero(arBssid, MAC_ADDR_LEN);
 
 	ASSERT(prGlueInfo);
@@ -1088,7 +1090,13 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 
 			/* CFG80211 Indication */
 			if (eStatus == WLAN_STATUS_ROAM_OUT_FIND_BEST) {
-				struct cfg80211_roam_info roam_info = {
+				/*cfg80211_roamed_bss(prGlueInfo->prDevHandler,
+ 						    bss,
+ 						    prGlueInfo->aucReqIe,
+ 						    prGlueInfo->u4ReqIeLength,
+ 						    prGlueInfo->aucRspIe, prGlueInfo->u4RspIeLength, GFP_KERNEL);
+				*/
+                struct cfg80211_roam_info roam_info = {
 							.bss = bss,
 						    .req_ie = prGlueInfo->aucReqIe,
 						    .req_ie_len = prGlueInfo->u4ReqIeLength,
@@ -1097,7 +1105,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 				};
 				cfg80211_roamed(prGlueInfo->prDevHandler,
 						    &roam_info,
-							GFP_KERNEL);;
+							GFP_KERNEL);
 			} else {
 				/* to support user space roaming, cfg80211 will change the sme_state to connecting
 				before reassociate */
@@ -1168,7 +1176,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 		DBGLOG(SCN, TRACE, "[ais] scan complete %p %d %d\n", prScanRequest, ScanCnt, ScanDoneFailCnt);
 
 		if (prScanRequest != NULL)
-			cfg80211_scan_done(prScanRequest, FALSE);
+			cfg80211_scan_done(prScanRequest, &info);
 		break;
 	case WLAN_STATUS_CONNECT_INDICATION:
 		prBssDesc = prGlueInfo->prAdapter->rWifiVar.rAisFsmInfo.prTargetBssDesc;
@@ -1802,7 +1810,7 @@ kalIoctl(IN P_GLUE_INFO_T prGlueInfo,
 	if (fgIsResetting == TRUE)
 		return WLAN_STATUS_SUCCESS;
 
-	/* unsigned long __u4FLags = 0; */
+	/* GLUE_SPIN_LOCK_DECLARATION(); */
 	ASSERT(prGlueInfo);
 
 	/* <1> Check if driver is halt */
@@ -1919,6 +1927,7 @@ VOID kalClearSecurityFrames(IN P_GLUE_INFO_T prGlueInfo)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	/* Clear pending security frames in prGlueInfo->rCmdQueue */
@@ -1966,6 +1975,7 @@ VOID kalClearSecurityFramesByNetType(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_NETWOR
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	/* Clear pending security frames in prGlueInfo->rCmdQueue */
@@ -2010,6 +2020,7 @@ VOID kalClearMgmtFrames(IN P_GLUE_INFO_T prGlueInfo)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	/* Clear pending management frames in prGlueInfo->rCmdQueue */
@@ -2054,6 +2065,7 @@ VOID kalClearMgmtFramesByNetType(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_NETWORK_TY
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	/* Clear pending management frames in prGlueInfo->rCmdQueue */
@@ -2113,6 +2125,7 @@ int tx_thread(void *data)
 
 	/* for spin lock acquire and release */
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	prTxQueue = &prGlueInfo->rTxQueue;
 	prCmdQue = &prGlueInfo->rCmdQueue;
 
@@ -2467,6 +2480,7 @@ VOID kalFlushPendingTxPackets(IN P_GLUE_INFO_T prGlueInfo)
 	PVOID prPacket;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	prTxQue = &(prGlueInfo->rTxQueue);
@@ -2536,6 +2550,7 @@ VOID kalOidCmdClearance(IN P_GLUE_INFO_T prGlueInfo)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	prCmdQue = &prGlueInfo->rCmdQueue;
@@ -2586,6 +2601,7 @@ VOID kalEnqueueCommand(IN P_GLUE_INFO_T prGlueInfo, IN P_QUE_ENTRY_T prQueueEntr
 	P_MSDU_INFO_T prMsduInfo;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 	ASSERT(prQueueEntry);
 
@@ -2845,7 +2861,7 @@ UINT_32 kalRandomNumber(VOID)
 VOID kalTimeoutHandler(struct timer_list *t)
 {
 
-    P_GLUE_INFO_T prGlueInfo = from_timer(prGlueInfo, t, tickfn);
+	P_GLUE_INFO_T prGlueInfo = from_timer(prGlueInfo, t, tickfn);
 
 	ASSERT(prGlueInfo);
 
@@ -3381,7 +3397,7 @@ UINT_32 kalFileRead(struct file *file, UINT_64 offset, UINT_8 *data, UINT_32 siz
 	//oldfs = get_fs();
 	//set_fs(get_ds());
 
-	ret = vfs_read(file, data, size, &offset);
+	ret = kernel_read(file, data, size, &offset);
 
 	//set_fs(oldfs);
 	return ret;
@@ -3395,7 +3411,7 @@ UINT_32 kalFileWrite(struct file *file, UINT_64 offset, UINT_8 *data, UINT_32 si
 	//oldfs = get_fs();
 	//set_fs(get_ds());
 
-	ret = vfs_write(file, data, size, &offset);
+	ret = kernel_write(file, data, size, &offset);
 
 	//set_fs(oldfs);
 	return ret;
@@ -3888,12 +3904,12 @@ static ssize_t kalMetPortWriteProcfs(struct file *file, const char __user *buffe
 	return count;
 }
 
-const struct file_operations rMetProcCtrlFops = {
-.write = kalMetCtrlWriteProcfs
+const struct proc_ops rMetProcCtrlFops = {
+.proc_write = kalMetCtrlWriteProcfs
 };
 
-const struct file_operations rMetProcPortFops = {
-.write = kalMetPortWriteProcfs
+const struct proc_ops rMetProcPortFops = {
+.proc_write = kalMetPortWriteProcfs
 };
 
 int kalMetInitProcfs(IN P_GLUE_INFO_T prGlueInfo)
@@ -3987,6 +4003,7 @@ VOID kalSchedScanResults(IN P_GLUE_INFO_T prGlueInfo)
 VOID kalSchedScanStopped(IN P_GLUE_INFO_T prGlueInfo)
 {
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prGlueInfo);
 
 	/* 1. reset first for newly incoming request */
@@ -4059,17 +4076,24 @@ INT_32 kalHaltLock(UINT_32 waitMs)
 			P_GLUE_INFO_T prGlueInfo = NULL;
 
 			wlanExportGlueInfo(&prGlueInfo);
-
+#ifdef MTK_WCN_BUILT_IN_DRIVER
 			DBGLOG(INIT, ERROR,
 				"kalIoctl was executed longer than %u ms, show backtrace of tx_thread!\n",
 				kalGetTimeTick() - rHaltCtrl.u4HoldStart);
 			if (prGlueInfo)
 				show_stack(prGlueInfo->main_thread, NULL,KERN_DEFAULT);
+            #else
+			DBGLOG(INIT, ERROR,
+				"kalIoctl was executed longer than %u ms!\n",
+				kalGetTimeTick() - rHaltCtrl.u4HoldStart);
+#endif
 		} else {
 			DBGLOG(INIT, ERROR, "halt lock held by %s pid %d longer than %u ms!\n",
 				rHaltCtrl.owner->comm, rHaltCtrl.owner->pid,
 				kalGetTimeTick() - rHaltCtrl.u4HoldStart);
+#ifdef MTK_WCN_BUILT_IN_DRIVER
 			show_stack(rHaltCtrl.owner, NULL, KERN_DEFAULT);
+#endif
 		}
 		return i4Ret;
 	}
@@ -4405,4 +4429,73 @@ INT32 __weak kalSetCpuNumFreq(UINT_32 core_num, UINT_32 freq)
 {
 	DBGLOG(SW4, WARN, "enter weak kalSetCpuNumFreq, core_num:%d\n", core_num);
 	return 0;
+}
+
+static int wlan_fb_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
+{
+	struct fb_event *evdata = data;
+	INT_32 blank;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+
+#ifdef ENHANCE_AP_MODE_THROUGHPUT
+	BOOLEAN fgIsPureAp = FALSE;
+#endif
+
+	/* If we aren't interested in this event, skip it immediately ... */
+	if (event != FB_EVENT_BLANK)
+		return 0;
+
+	if (kalHaltTryLock())
+		return 0;
+
+	prGlueInfo = (P_GLUE_INFO_T)wlan_fb_notifier_priv_data;
+	blank = *(INT_32 *)evdata->data;
+
+	switch (blank) {
+	case FB_BLANK_UNBLANK:
+		if (!kalIsHalted())
+			kalPerMonEnable(prGlueInfo);
+		wlan_fb_power_down = FALSE;
+		break;
+	case FB_BLANK_POWERDOWN:
+		wlan_fb_power_down = TRUE;
+		if (!kalIsHalted()) {
+#ifdef ENHANCE_AP_MODE_THROUGHPUT
+			/* Distinguish AP mode from STA mode requirement  */
+			if (prGlueInfo && prGlueInfo->prAdapter && prGlueInfo->prAdapter->rWifiVar.prP2pFsmInfo)
+				fgIsPureAp = prGlueInfo->prAdapter->rWifiVar.prP2pFsmInfo->fgIsApMode;
+			if (!fgIsPureAp)
+				kalPerMonDisable(prGlueInfo);
+#else
+			kalPerMonDisable(prGlueInfo);
+#endif
+		}
+		break;
+	default:
+		break;
+	}
+
+	kalHaltUnlock();
+	return 0;
+}
+
+INT_32 kalFbNotifierReg(IN P_GLUE_INFO_T prGlueInfo)
+{
+	INT_32 i4Ret;
+
+	wlan_fb_notifier_priv_data = prGlueInfo;
+	wlan_fb_notifier.notifier_call = wlan_fb_notifier_callback;
+	i4Ret = fb_register_client(&wlan_fb_notifier);
+	if (i4Ret)
+		DBGLOG(SW4, WARN, "Register wlan_fb_notifier failed:%d\n", i4Ret);
+	else
+		DBGLOG(SW4, TRACE, "Register wlan_fb_notifier succeed\n");
+
+	return i4Ret;
+}
+
+VOID kalFbNotifierUnReg(VOID)
+{
+	fb_unregister_client(&wlan_fb_notifier);
+	wlan_fb_notifier_priv_data = NULL;
 }

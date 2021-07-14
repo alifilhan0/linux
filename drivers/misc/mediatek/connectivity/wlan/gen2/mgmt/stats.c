@@ -943,9 +943,9 @@ UINT_64 StatsEnvTimeGet(VOID)
 {
 	/* TODO: use better API to get time to save time, jiffies unit is 10ms, too large */
 
-/* struct timeval tv; */
+/* struct timespec64 tv; */
 
-/* do_gettimeofday(&tv); */
+/* ktime_get_real_ts64(&tv); */
 /* return tv.tv_usec + tv.tv_sec * (UINT_64)1000000; */
 
 	UINT_64 u8Clk;

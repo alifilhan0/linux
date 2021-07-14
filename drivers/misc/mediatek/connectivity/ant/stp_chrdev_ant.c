@@ -19,7 +19,7 @@
 #include <linux/cdev.h>
 #include <linux/sched.h>
 #include <asm/current.h>
-#include <linux/uaccess.h>
+#include <asm/uaccess.h>
 #include <linux/fcntl.h>
 #include <linux/poll.h>
 #include <linux/delay.h>
@@ -28,6 +28,7 @@
 #include "stp_exp.h"
 #include "wmt_exp.h"
 
+MODULE_LICENSE("Dual BSD/GPL");
 
 #define ANT_DRIVER_NAME "mtk_stp_ANT_chrdev"
 #define ANT_DEV_MAJOR 197	/* never used number */
@@ -432,9 +433,9 @@ static INT32 ANT_DownLoad_RAM_Code(unsigned long ver)
 	UINT32 transport_length = 0;
 	INT32 download_number = 0;
 	INT32 i = 0;
-	//mm_segment_t old_fs = get_fs();
+	mm_segment_t old_fs = get_fs();
 
-	//set_fs(KERNEL_DS);
+	set_fs(KERNEL_DS);
 
 	switch (ver) {
 	case ANT_RAM_CODE_COMBO_V1:
@@ -542,7 +543,7 @@ static INT32 ANT_DownLoad_RAM_Code(unsigned long ver)
 		   }
 		 */
 	filp_close(pPatchExtFile, NULL);
-	///set_fs(old_fs);
+	set_fs(old_fs);
 	return 1;
 }
 

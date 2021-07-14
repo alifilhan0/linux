@@ -22,7 +22,6 @@
 */
 #include "net/cfg80211.h"
 #include "precomp.h"
-#include <linux/fb.h>
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -878,9 +877,9 @@ VOID kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgIsAbort)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 	struct cfg80211_scan_request *prScanRequest = NULL;
-        struct cfg80211_scan_info info = {
+    struct cfg80211_scan_info info = {
                 .aborted = true,
-        }
+        };
 
 	GLUE_SPIN_LOCK_DECLARATION();
 
@@ -1045,11 +1044,12 @@ VOID kalP2PIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo, IN P_SW_RFB_T prSwRf
 
 }				/* kalP2PIndicateRxMgmtFrame */
 
+
 VOID
 kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 				 IN P_P2P_CONNECTION_REQ_INFO_T prP2pConnInfo,
 				 IN PUINT_8 pucRxIEBuf, IN UINT_16 u2RxIELen, IN UINT_16 u2StatusReason,
-				 IN WLAN_STATUS eStatus)
+                                 IN WLAN_STATUS eStatus)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 
@@ -1073,7 +1073,7 @@ kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 			cfg80211_disconnected(prGlueP2pInfo->prDevHandler,	/* struct net_device * dev, */
 					      u2StatusReason, pucRxIEBuf, u2RxIELen,
 					      eStatus == WLAN_STATUS_MEDIA_DISCONNECT_LOCALLY,
-					      GFP_KERNEL);;
+					      GFP_KERNEL);
 		}
 
 	} while (FALSE);
@@ -1092,12 +1092,12 @@ VOID kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo, IN P_STA_RECORD_T prCliS
 		prP2pGlueInfo = prGlueInfo->prP2PInfo;
 
 		if (fgIsNew) {
-			//rStationInfo.filled = STATION_INFO_ASSOC_REQ_IES;
+			//rStationInfo.filled = BIT(NL80211_STA_ASSOC_REQ_IES;
 			rStationInfo.generation = ++prP2pGlueInfo->i4Generation;
 
 			rStationInfo.assoc_req_ies = prCliStaRec->pucAssocReqIe;
 			rStationInfo.assoc_req_ies_len = prCliStaRec->u2AssocReqIeLen;
-/* rStationInfo.filled |= STATION_INFO_ASSOC_REQ_IES; */
+/* rStationInfo.filled |= BIT(NL80211_STA_ASSOC_REQ_IES; */
 
 			cfg80211_new_sta(prGlueInfo->prP2PInfo->prDevHandler,	/* struct net_device * dev, */
 					 prCliStaRec->aucMacAddr, &rStationInfo, GFP_KERNEL);

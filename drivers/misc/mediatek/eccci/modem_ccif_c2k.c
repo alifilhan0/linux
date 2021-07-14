@@ -1348,7 +1348,7 @@ static void md_ccif_dump_queue_history(struct ccci_modem *md, unsigned int qno)
 
 static int md_ccif_dump_info(struct ccci_modem *md, MODEM_DUMP_FLAG flag, void *buff, int length)
 {
-	struct md_ccif_ctrl *md_ctrl = (struct md_ccif_ctrl *)md->private_data;
+	struct md_ccif_ctrl __maybe_unused *md_ctrl = (struct md_ccif_ctrl *)md->private_data;
 
 	/*runtime data, boot, long time no response EE */
 	if (flag & DUMP_FLAG_CCIF) {
@@ -1361,14 +1361,14 @@ static int md_ccif_dump_info(struct ccci_modem *md, MODEM_DUMP_FLAG flag, void *
 		ccci_dump_req_user_list();
 #endif
 	if (flag & DUMP_FLAG_MD_WDT)
-		dump_c2k_register(md, 1);
+		//dump_c2k_register(md, 1);
 	/*MD boot fail EE */
 	if (flag & DUMP_FLAG_CCIF_REG)
-		dump_c2k_register(md, 2);
+		//dump_c2k_register(md, 2);
 
 	if (flag & DUMP_FLAG_IRQ_STATUS) {
 		CCCI_INF_MSG(md->index, KERN, "Dump AP CCIF IRQ status\n");
-		mt_irq_dump_status(md_ctrl->ccif_irq_id);
+		//mt_irq_dump_status(md_ctrl->ccif_irq_id);
 	}
 	if (flag & DUMP_FLAG_QUEUE_0)
 		md_ccif_dump_queue_history(md, 0);

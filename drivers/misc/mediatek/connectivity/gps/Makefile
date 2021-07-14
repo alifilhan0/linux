@@ -15,8 +15,8 @@ ifneq ($(filter "CONSYS_%",$(CONFIG_MTK_COMBO_CHIP)),)
         ccflags-y += -DREMOVE_MK_NODE=0
 
 ccflags-y += \
-	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/mt6735/include \
-	-I$(srctree)/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach
+ 	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/$(MTK_PLATFORM)/include \
+	-I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/mach
 else
         ccflags-y += -DSOC_CO_CLOCK_FLAG=0
         ccflags-y += -DWMT_CREATE_NODE_DYNAMIC=0
@@ -25,9 +25,9 @@ endif
 ccflags-y += \
 	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/include \
 	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include \
+	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/$(MTK_PLATFORM)/include \
 	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/core/include \
-	-I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/mt6735/include \
-	-I$(srctree)/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach
+	-I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/mach
 
 obj-$(CONFIG_MTK_COMBO_GPS)	+= stp_chrdev_gps.o
 obj-$(CONFIG_MTK_GPS)		+= gps.o

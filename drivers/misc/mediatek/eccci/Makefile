@@ -29,11 +29,10 @@ ccflags-y  += -DMTK_SEC_MODEM_NVRAM_ANTI_CLONE
 endif
 
 # common services
-ccci-y := ccci_core.o ccci_bm.o ccci_support.o ccci_modem.o ccci_swtp.o ccci_fsm.o
+ccci-y := ccci_core.o ccci_bm.o ccci_support.o ccci_modem.o ccci_swtp.o ccci_fsm.o ccci_auxadc.o
 
 # port routines
-ccci-y += port_char.o port_net.o port_ipc.o port_cfg.o port_smem.o \
-	port_rpc.o port_sysmsg.o port_poller.o port_ctlmsg.o port_proxy.o
+ccci-y += port_char.o port_net.o port_ipc.o port_cfg.o port_smem.o port_rpc.o port_sysmsg.o port_poller.o port_ctlmsg.o port_proxy.o
 
 # md ee routines
 ccci-y += mdee_ctl.o mdee_dumper_v1.o mdee_dumper_v2.o

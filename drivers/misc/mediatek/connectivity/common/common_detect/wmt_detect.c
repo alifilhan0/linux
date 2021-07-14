@@ -72,7 +72,7 @@ static ssize_t wmt_detect_read(struct file *filp, char __user *buf, size_t count
 	return 0;
 }
 
-ssize_t wmt_detect_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
+static ssize_t wmt_detect_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
 	WMT_DETECT_INFO_FUNC(" ++\n");
 	WMT_DETECT_INFO_FUNC(" --\n");
@@ -286,15 +286,14 @@ static struct platform_driver wmt_detect_driver = {
 	.probe = wmt_detect_probe,
 	.remove = wmt_detect_remove,
 	.driver = {
-		.owner = THIS_MODULE,
 		.name = "mediatek,connectivity-combo",
 		.of_match_table = wmt_detect_match,
 	},
 };
+/*module_platform_driver(wmt_detect_driver);*/
 #endif
 
-/*module_platform_driver(wmt_detect_driver);*/
-static int wmt_detect_driver_init(void)
+static int __init wmt_detect_driver_init(void)
 {
 	dev_t devID = MKDEV(gWmtDetectMajor, 0);
 	int cdevErr = -1;
@@ -362,9 +361,18 @@ err1:
 	return -1;
 }
 
-static void wmt_detect_driver_exit(void)
+static void __exit wmt_detect_driver_exit(void)
 {
 	dev_t dev = MKDEV(gWmtDetectMajor, 0);
+
+#ifdef MTK_WCN_COMBO_CHIP_SUPPORT
+	platform_driver_unregister(&wmt_detect_driver);
+#endif
+
+#if !(MTK_WCN_REMOVE_KO)
+/*deinit SDIO-DETECT module*/
+	sdio_detect_exit();
+#endif
 
 	if (pDetectDev) {
 		device_destroy(pDetectClass, dev);
@@ -378,15 +386,6 @@ static void wmt_detect_driver_exit(void)
 
 	cdev_del(&gWmtDetectCdev);
 	unregister_chrdev_region(dev, WMT_DETECT_DEV_NUM);
-
-#if !(MTK_WCN_REMOVE_KO)
-/*deinit SDIO-DETECT module*/
-	sdio_detect_exit();
-#endif
-
-#ifdef MTK_WCN_COMBO_CHIP_SUPPORT
-	platform_driver_unregister(&wmt_detect_driver);
-#endif
 
 	WMT_DETECT_INFO_FUNC("done\n");
 }

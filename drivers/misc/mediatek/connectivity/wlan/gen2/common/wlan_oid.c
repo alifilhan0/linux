@@ -5860,12 +5860,10 @@ wlanoidSetAcpiDevicePowerState(IN P_ADAPTER_T prAdapter,
 		break;
 	case ParamDeviceStateD1:
 		DBGLOG(OID, INFO, "Set Power State: D1\n");
-		/* no break here */
-        fallthrough;
+		fallthrough;
 	case ParamDeviceStateD2:
 		DBGLOG(OID, INFO, "Set Power State: D2\n");
-		/* no break here */
-        fallthrough;
+		fallthrough;
 	case ParamDeviceStateD3:
 		DBGLOG(OID, INFO, "Set Power State: D3\n");
 		fgRetValue = nicpmSetAcpiPowerD3(prAdapter);

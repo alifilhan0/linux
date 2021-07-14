@@ -18,7 +18,6 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/sched.h>
-//#include <wakelock.h>
 #include <asm/current.h>
 #include <asm/uaccess.h>
 #include <linux/skbuff.h>
@@ -556,11 +555,10 @@ static int GPS_init(void)
 #endif
 	pr_warn("%s driver(major %d) installed.\n", GPS_DRIVER_NAME, GPS_major);
 
-	//wakeup_source_init(&gps_wake_lock, "gpswakelock");
-    	if((gps_wake_lock = wakeup_source_create("gpswakelock")))
-		         wakeup_source_add(gps_wake_lock);
+	if((gps_wake_lock = wakeup_source_create("gpswakelock")))
+        wakeup_source_add(gps_wake_lock);
 
-        return 0;
+	return 0;
 
 error:
 

@@ -41,7 +41,6 @@
 
 #include <linux/proc_fs.h>
 #include "hif_sdio.h"
-#include "card.h"
 /* #include "hif_sdio_chrdev.h" */
 
 #if MTK_HIF_SDIO_AUTOK_ENABLED

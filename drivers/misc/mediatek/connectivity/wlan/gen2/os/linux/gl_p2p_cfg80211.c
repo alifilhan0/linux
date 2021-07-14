@@ -1059,7 +1059,7 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, st
 	INT_32 i4Rslt = -EINVAL;
 	P_MSG_P2P_CONNECTION_ABORT_T prDisconnectMsg = (P_MSG_P2P_CONNECTION_ABORT_T) NULL;
 	UINT_8 aucBcMac[] = BC_MAC_ADDR;
-    const UINT_8 *mac = NULL;
+	const UINT_8 *mac = NULL;
 
 	do {
 		if ((wiphy == NULL) || (dev == NULL))
@@ -1067,10 +1067,10 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, st
 
 		if (params->mac == NULL)
 			mac = aucBcMac;
-             else
-                  mac=params->mac;
+                else
+                        mac = params->mac;
 
-		DBGLOG(P2P, INFO, "mtk_p2p_cfg80211_del_station.\n");
+		DBGLOG(P2P, TRACE, "mtk_p2p_cfg80211_del_station.\n");
 
 		prGlueInfo = *((P_GLUE_INFO_T *) wiphy_priv(wiphy));
 
@@ -1089,7 +1089,6 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, st
 		prDisconnectMsg->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
 		COPY_MAC_ADDR(prDisconnectMsg->aucTargetID, mac);
 		prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
-		prDisconnectMsg->fgSendDeauth = TRUE;
 
 		mboxSendMsg(prGlueInfo->prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prDisconnectMsg, MSG_SEND_METHOD_BUF);
 
@@ -1189,7 +1188,7 @@ int mtk_p2p_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev, u16
 
 int mtk_p2p_cfg80211_change_iface(struct wiphy *wiphy,
 				  struct net_device *ndev,
-				  enum nl80211_iftype type, /*u32 *flags*/ struct vif_params *params)
+				  enum nl80211_iftype type,/* u32 *flags,*/ struct vif_params *params)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	INT_32 i4Rslt = -EINVAL;
@@ -1392,7 +1391,8 @@ void mtk_p2p_cfg80211_update_mgmt_frame_register(IN struct wiphy *wiphy,
 
 	} while (FALSE);
 
-}				/* mtk_p2p_cfg80211_mgmt_frame_register */
+
+}/* mtk_p2p_cfg80211_mgmt_frame_register */
 
 #if CONFIG_NL80211_TESTMODE
 int mtk_p2p_cfg80211_testmode_cmd(IN struct wiphy *wiphy, IN struct wireless_dev *wdev, IN void *data, IN int len)

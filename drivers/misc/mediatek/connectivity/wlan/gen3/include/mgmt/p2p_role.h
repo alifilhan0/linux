@@ -128,14 +128,14 @@ typedef struct _MSG_P2P_START_AP_T {
 	INT_32 i4InactiveTimeout;
 } MSG_P2P_START_AP_T, *P_MSG_P2P_START_AP_T;
 
-typedef struct _P2P_STATION_INFO_T {
+typedef struct _P2P_BIT(NL80211_STA_T {
 	UINT_32 u4InactiveTime;
 	UINT_32 u4RxBytes;	/* TODO: */
 	UINT_32 u4TxBytes;	/* TODO: */
 	UINT_32 u4RxPackets;	/* TODO: */
 	UINT_32 u4TxPackets;	/* TODO: */
 	/* TODO: Add more for requirement. */
-} P2P_STATION_INFO_T, *P_P2P_STATION_INFO_T;
+} P2P_BIT(NL80211_STA_T, *P_P2P_BIT(NL80211_STA_T;
 
 /* 3  --------------- WFA P2P Attributes Handler prototype --------------- */
 typedef UINT_32(*PFN_APPEND_ATTRI_FUNC) (P_ADAPTER_T, BOOLEAN, PUINT_16, PUINT_8, UINT_16);

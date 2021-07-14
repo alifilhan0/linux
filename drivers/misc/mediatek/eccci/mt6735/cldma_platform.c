@@ -229,7 +229,7 @@ void ccci_power_off(void)
 	* Power on VLTE for system power off backlight work normal
 	*/
 	CCCI_NORMAL_LOG(-1, CORE, "ccci_power_off:set VLTE on,bit0,1\n");
-	pmic_config_interface(0x04D6, 0x1, 0x1, 0); /* bit[0] =>1'b1 */
+	//pmic_config_interface(0x04D6, 0x1, 0x1, 0); /* bit[0] =>1'b1 */
 	udelay(200);
 }
 
@@ -260,7 +260,7 @@ int md_cd_power_on(struct ccci_modem *md)
 	/* mt6325_upmu_get_swcid()==PMIC6325_E2_CID_CODE)) */
 	{
 		CCCI_NORMAL_LOG(md->index, CORE, "md_cd_power_on:set VLTE on,bit0,1\n");
-		pmic_config_interface(0x04D6, 0x1, 0x1, 0);	/* bit[0] =>1'b1 */
+		//pmic_config_interface(0x04D6, 0x1, 0x1, 0);	/* bit[0] =>1'b1 */
 		udelay(200);
 		/*
 		 *[Notes] move into md cmos flow, for hardwareissue, so disable on denlai.
@@ -294,7 +294,7 @@ int md_cd_power_on(struct ccci_modem *md)
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end clk_prepare_enable()ret=%d\n", ret);
 #endif
 
-		kicker_pbm_by_md(MD1, true);
+		//kicker_pbm_by_md(MD1, true);
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end kicker_pbm_by_md(0,true)\n");
 		break;
 	}
@@ -378,7 +378,7 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 
 		clk_unprepare(clk_scp_sys_md1_main);	/* cannot be called in mutex context */
 #endif
-		kicker_pbm_by_md(MD1, false);
+		//kicker_pbm_by_md(MD1, false);
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end kicker_pbm_by_md(0,false)\n");
 		break;
 	}
@@ -405,7 +405,7 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 		bit[6]=0x%x\n", ccci_read32(infra_ao_base, 0x338), (ccci_read32(infra_ao_base,0x338)&0x40)); */
 
 		CCCI_NORMAL_LOG(md->index, CORE, "md_cd_power_off:set VLTE on,bit0=0\n");
-		pmic_config_interface(0x04D6, 0x0, 0x1, 0);	/* bit[0] =>1'b0 */
+		//pmic_config_interface(0x04D6, 0x0, 0x1, 0);	/* bit[0] =>1'b0 */
 	}
 	if (NULL != mdcldma_pinctrl) {
 		vsram_output_low = pinctrl_lookup_state(mdcldma_pinctrl, "vsram_output_low");

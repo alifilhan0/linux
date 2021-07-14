@@ -75,7 +75,7 @@ static fm_u16 fm_cur_freq_get(void);
 static fm_s32 fm_cur_freq_set(fm_u16 new_freq);
 static enum fm_op_state fm_op_state_get(struct fm *fmp);
 static enum fm_op_state fm_op_state_set(struct fm *fmp, enum fm_op_state sta);
-static void fm_timer_func(unsigned long data);
+static void fm_timer_func(struct timer_list *t);
 static void fm_enable_rds_BlerCheck(struct fm *fm);
 static void fm_disable_rds_BlerCheck(void);
 static void fm_rds_reset_work_func(unsigned long data);
@@ -428,7 +428,7 @@ fm_s32 fm_powerup(struct fm *fm, struct fm_tune_parm *parm)
 	/* fm_low_ops.bi.volset(0); */
 	fm->vol = 15;
 	if (fm_low_ops.ri.rds_bci_get) {
-		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (unsigned long)g_fm_struct,
+		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (struct timer_list *)g_fm_struct,
 				   fm_low_ops.ri.rds_bci_get(), 0);
 		fm_timer_sys->start(fm_timer_sys);
 	} else {
@@ -1768,7 +1768,7 @@ fm_s32 fm_rdstx_enable(struct fm *fm, fm_s32 enable)
 	return 0;
 }
 
-static void fm_timer_func(unsigned long data)
+static void fm_timer_func(struct timer_list *t)
 {
 	struct fm *fm = g_fm_struct;
 
@@ -1822,7 +1822,7 @@ static void fm_tx_rtc_ctrl_worker_func(unsigned long data)
 	fm_s32 ret = 0;
 	fm_s32 ctrl = 0;
 	struct fm_gps_rtc_info rtcInfo;
-	/* struct timeval curTime; */
+	/* struct timespec64 curTime; */
 	/* struct fm *fm = (struct fm*)fm_cb; */
 	unsigned long curTime = 0;
 
@@ -2064,7 +2064,7 @@ void fm_subsys_reset_work_func(unsigned long data)
 	fm_low_ops.bi.mute(g_fm_struct->mute);
 
 	if (fm_low_ops.ri.rds_bci_get) {
-		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (unsigned long)g_fm_struct, fm_low_ops.ri.rds_bci_get(),
+		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (struct timer_list *)g_fm_struct, fm_low_ops.ri.rds_bci_get(),
 				   0);
 		WCN_DBG(FM_NTC | MAIN, "initial timer ok\n");
 	} else {

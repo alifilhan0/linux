@@ -87,7 +87,7 @@ typedef int (*MTK_WCN_BTIF_RX_CB) (const unsigned char *p_buf,
 *      this user id is only an identifier used for owner identification
 *****************************************************************************/
 int mtk_wcn_btif_open(char *p_owner, unsigned long *p_id);
-
+//EXPORT_SYMBOL(mtk_wcn_btif_open)
 /*****************************************************************************
 * FUNCTION
 *  mtk_wcn_btif_close
@@ -101,7 +101,7 @@ int mtk_wcn_btif_open(char *p_owner, unsigned long *p_id);
 *  others = fail, for detailed information, please see ENUM_BTIF_OP_ERROR_CODE
 *****************************************************************************/
 int mtk_wcn_btif_close(unsigned long u_id);
-
+//EXPORT_SYMBOL(mtk_wcn_btif_close)
 /*****************************************************************************
 * FUNCTION
 *  mtk_wcn_btif_write
@@ -140,7 +140,7 @@ int mtk_wcn_btif_close(unsigned long u_id);
 *****************************************************************************/
 int mtk_wcn_btif_write(unsigned long u_id,
 		       const unsigned char *p_buf, unsigned int len);
-
+//EXPORT_SYMBOL(mtk_wcn_btif_write)
 /*****************************************************************************
 * FUNCTION
 *  mtk_wcn_btif_read
@@ -156,7 +156,7 @@ int mtk_wcn_btif_write(unsigned long u_id,
 *****************************************************************************/
 int mtk_wcn_btif_read(unsigned long u_id,
 		      unsigned char *p_buf, unsigned int max_len);
-
+//EXPORT_SYMBOL(mtk_wcn_btif_read)
 /*****************************************************************************
 * FUNCTION
 *  mtk_wcn_btif_dpidle_ctrl
@@ -221,7 +221,7 @@ int mtk_wcn_btif_wakeup_consys(unsigned long u_id);
 *  others = fail, for detailed information, please see ENUM_BTIF_OP_ERROR_CODE
 *****************************************************************************/
 int mtk_wcn_btif_loopback_ctrl(unsigned long u_id, ENUM_BTIF_LPBK_MODE enable);
-
+//EXPORT_SYMBOL(mtk_wcn_btif_loopback_ctrl)
 /*****************************************************************************
 * FUNCTION
 *  mtk_wcn_btif_logger_ctrl
@@ -242,6 +242,7 @@ int mtk_wcn_btif_loopback_ctrl(unsigned long u_id, ENUM_BTIF_LPBK_MODE enable);
 *        please see ENUM_BTIF_OP_ERROR_CODE
 *****************************************************************************/
 int mtk_wcn_btif_dbg_ctrl(unsigned long u_id, ENUM_BTIF_DBG_ID flag);
+//EXPORT_SYMBOL(mtk_wcn_btif_dbg_ctrl);
 /*-----------End of Debug Purpose API declearation------------*/
 
 /*****************************************************************************

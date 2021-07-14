@@ -36,7 +36,6 @@
 ********************************************************************************
 */
 #include <linux/delay.h>
-#include <linux/pinctrl/consumer.h>
 
 /* ALPS header files */
 /*#include <mtk_rtc.h>*/
@@ -50,6 +49,7 @@
 #include "osal_typedef.h"
 #include "mtk_wcn_consys_hw.h"
 #include "stp_dbg.h"
+#include <linux/pinctrl/consumer.h>
 
 #define CFG_WMT_WAKELOCK_SUPPORT 1
 
@@ -331,8 +331,8 @@ INT32 wmt_plat_soc_init(UINT32 co_clock_type)
 	/* register to cmb_stub */
 	iret = mtk_wcn_cmb_stub_reg(&stub_cb);
 #ifdef CFG_WMT_WAKELOCK_SUPPORT
-     	if((wmtWakeLock = wakeup_source_create("wmtFuncCtrl")))
-		wakeup_source_add(wmtWakeLock);
+	if((wmtWakeLock = wakeup_source_create("wmtFuncCtrl")))
+        wakeup_source_add(wmtWakeLock);
 	mutex_init(&gOsSLock);
 #endif
 
@@ -358,8 +358,7 @@ INT32 wmt_plat_deinit(VOID)
 
 	/*3. wmt wakelock deinit */
 #ifdef CFG_WMT_WAKELOCK_SUPPORT
-    wakeup_source_remove(wmtWakeLock);
-    wakeup_source_destroy(wmtWakeLock);
+	wakeup_source_destroy(wmtWakeLock);
 	mutex_destroy(&gOsSLock);
 	WMT_PLAT_DBG_FUNC("destroy wmtWakeLock\n");
 #endif
@@ -832,7 +831,7 @@ INT32 wmt_plat_wake_lock_ctrl(ENUM_WL_OP opId)
 		WMT_PLAT_DBG_FUNC("WMT-PLAT: after wake_lock(%d), counter(%d)\n", status, counter);
 
 	} else if (WL_OP_PUT == opId && counter == 0) {
-        __pm_relax(wmtWakeLock);
+		__pm_relax(wmtWakeLock);
 		status = wmtWakeLock->active;
 		WMT_PLAT_DBG_FUNC("WMT-PLAT: after wake_unlock(%d), counter(%d)\n", status, counter);
 	} else {

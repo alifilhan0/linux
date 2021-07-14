@@ -33,7 +33,7 @@
 #ifdef CONFIG_PM_WAKELOCKS
 /* #include <linux/pm_wakeup.h> */
 #else
-/*#include <wakelock.h>*/
+#include <linux/wakelock.h>
 #endif
 #define CFG_WMT_WAKELOCK_SUPPORT 1
 
@@ -63,14 +63,12 @@
 #include "mtk_wcn_cmb_hw.h"
 #include "osal.h"
 #include "wmt_gpio.h"
-#include "wmt_exp.h"
+
 #include <linux/of.h>
 #include <linux/of_irq.h>
 #include <linux/irqreturn.h>
-#include <linux/pinctrl/consumer.h>
-#include <linux/delay.h>
-static UINT32 bgf_irq;
 
+static UINT32 bgf_irq;
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -104,22 +102,23 @@ static INT32 wmt_plat_gps_lna_ctrl(ENUM_PIN_STATE state);
 static INT32 wmt_plat_uart_rx_ctrl(ENUM_PIN_STATE state);
 
 static INT32 wmt_plat_dump_pin_conf(VOID);
-//static ENUM_CLOCK_CTRL status = CLK_OUT_DISABLE;
+
+
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
 */
 /* UINT32 gWmtDbgLvl = WMT_LOG_INFO; */
 INT32 gWmtMergeIfSupport = 0;
-//static ENUM_STP_TX_IF_TYPE gCommIfType = STP_MAX_IF_TX;
+static ENUM_STP_TX_IF_TYPE gCommIfType = STP_MAX_IF_TX;
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
 ********************************************************************************
 */
 #if CFG_WMT_WAKELOCK_SUPPORT
-static struct mutex gOsSLock;
-static struct wakeup_source *wmtWakeLock;
+static OSAL_SLEEPABLE_LOCK gOsSLock;
+static struct wake_lock wmtWakeLock;
 #endif
 
 irq_cb wmt_plat_bgf_irq_cb = NULL;
@@ -269,11 +268,10 @@ INT32 wmt_plat_init(P_PWR_SEQ_TIME pPwrSeqTime)
 	iret += mtk_wcn_cmb_hw_init(pPwrSeqTime);
 
 	/*init wmt function ctrl wakelock if wake lock is supported by host platform */
-
-	if((wmtWakeLock = wakeup_source_create("wmtFuncCtrl")))
-		wakeup_source_add(wmtWakeLock);
-	mutex_init(&gOsSLock);
-
+#ifdef CFG_WMT_WAKELOCK_SUPPORT
+	wake_lock_init(&wmtWakeLock, WAKE_LOCK_SUSPEND, "wmtFuncCtrl");
+	osal_sleepable_lock_init(&gOsSLock);
+#endif
 
 	WMT_DBG_FUNC("WMT-PLAT: ALPS platform init (%d)\n", iret);
 
@@ -290,11 +288,11 @@ INT32 wmt_plat_deinit(VOID)
 	/* 2. unreg to cmb_stub */
 	iret += mtk_wcn_cmb_stub_unreg();
 	/*3. wmt wakelock deinit */
-
-	wakeup_source_destroy(wmtWakeLock);
-	mutex_destroy(&gOsSLock);
+#ifdef CFG_WMT_WAKELOCK_SUPPORT
+	wake_lock_destroy(&wmtWakeLock);
+	osal_sleepable_lock_deinit(&gOsSLock);
 	WMT_DBG_FUNC("destroy wmtWakeLock\n");
-
+#endif
 	WMT_DBG_FUNC("WMT-PLAT: ALPS platform init (%d)\n", iret);
 
 	return 0;
@@ -892,7 +890,6 @@ INT32 wmt_plat_uart_ctrl(ENUM_PIN_STATE state)
 	case PIN_STA_IN_PU:
 		pinctrl_select_state(gpio_ctrl_info.pinctrl_info, gpio_ctrl_info.
 				gpio_ctrl_state[GPIO_COMBO_URXD_PIN].gpio_state[GPIO_IN_PULLUP]);
-        fallthrough;
 	default:
 		WMT_WARN_FUNC("WMT-PLAT:Warnning, invalid state(%d) on UART Group\n", state);
 		break;
@@ -1326,15 +1323,14 @@ static INT32 wmt_plat_uart_rx_ctrl(ENUM_PIN_STATE state)
 }
 
 
-
 INT32 wmt_plat_wake_lock_ctrl(ENUM_WL_OP opId)
 {
 #ifdef CFG_WMT_WAKELOCK_SUPPORT
 	static INT32 counter;
-	INT32 status;
 	INT32 ret = 0;
 
-	ret = mutex_lock_killable(&gOsSLock);
+
+	ret = osal_lock_sleepable_lock(&gOsSLock);
 	if (ret) {
 		WMT_ERR_FUNC("--->lock gOsSLock failed, ret=%d\n", ret);
 		return ret;
@@ -1345,23 +1341,23 @@ INT32 wmt_plat_wake_lock_ctrl(ENUM_WL_OP opId)
 	else if (WL_OP_PUT == opId)
 		--counter;
 
-	mutex_unlock(&gOsSLock);
+	osal_unlock_sleepable_lock(&gOsSLock);
 	if (WL_OP_GET == opId && counter == 1) {
-		__pm_stay_awake(wmtWakeLock);
-		status = wmtWakeLock->active;
-		WMT_DBG_FUNC("WMT-PLAT: after wake_lock(%d), counter(%d)\n", status, counter);
+		wake_lock(&wmtWakeLock);
+		WMT_DBG_FUNC("WMT-PLAT: after wake_lock(%d), counter(%d)\n",
+			     wake_lock_active(&wmtWakeLock), counter);
 
 	} else if (WL_OP_PUT == opId && counter == 0) {
-		__pm_relax(wmtWakeLock);
-		status = wmtWakeLock->active;
-		WMT_DBG_FUNC("WMT-PLAT: after wake_unlock(%d), counter(%d)\n", status, counter);
+		wake_unlock(&wmtWakeLock);
+		WMT_DBG_FUNC("WMT-PLAT: after wake_unlock(%d), counter(%d)\n",
+			     wake_lock_active(&wmtWakeLock), counter);
 	} else {
-		status = wmtWakeLock->active;
-		WMT_WARN_FUNC("WMT-PLAT: wakelock status(%d), counter(%d)\n", status, counter);
+		WMT_WARN_FUNC("WMT-PLAT: wakelock status(%d), counter(%d)\n",
+			      wake_lock_active(&wmtWakeLock), counter);
 	}
 	return 0;
 #else
-	WMT_WARN_FUNC("WMT-PLAT: host awake function is not supported.\n");
+	WMT_WARN_FUNC("WMT-PLAT: host awake function is not supported.");
 	return 0;
 
 #endif
@@ -1389,8 +1385,6 @@ INT32 wmt_plat_merge_if_flag_get(VOID)
 {
 	return gWmtMergeIfSupport;
 }
-
-static ENUM_STP_TX_IF_TYPE gCommIfType = STP_MAX_IF_TX;
 
 INT32 wmt_plat_set_comm_if_type(ENUM_STP_TX_IF_TYPE type)
 {

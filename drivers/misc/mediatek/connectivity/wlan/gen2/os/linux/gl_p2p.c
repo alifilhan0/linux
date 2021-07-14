@@ -29,7 +29,7 @@
 #include "gl_p2p_os.h"
 #include "gl_p2p_ioctl.h"
 #include "gl_vendor.h"
-#include <linux/fb.h>
+
 #include "precomp.h"
 
 /*******************************************************************************
@@ -1054,10 +1054,9 @@ static int p2pStop(IN struct net_device *prDev)
 	/* P_ADAPTER_T prAdapter = NULL; */
 /* P_MSG_P2P_FUNCTION_SWITCH_T prFuncSwitch; */
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
-
-        struct cfg80211_scan_info info = {
-               .aborted = true,
-        };
+    struct cfg80211_scan_info info = {
+            .aborted = true,
+    };
 
 	struct cfg80211_scan_request *prScanRequest = NULL;
 

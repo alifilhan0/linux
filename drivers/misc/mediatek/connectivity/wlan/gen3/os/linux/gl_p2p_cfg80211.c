@@ -379,7 +379,7 @@ int mtk_p2p_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev,
 	INT_32 i4RetRslt = -EINVAL;
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	P_GL_P2P_INFO_T prP2pGlueInfo = (P_GL_P2P_INFO_T) NULL;
-	P2P_STATION_INFO_T rP2pStaInfo;
+	P2P_BIT(NL80211_STA_T rP2pStaInfo;
 
 	ASSERT(wiphy);
 
@@ -399,7 +399,7 @@ int mtk_p2p_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev,
 		p2pFuncGetStationInfo(prGlueInfo->prAdapter, (PUINT_8)mac, &rP2pStaInfo);
 
 		/* Inactive time. */
-		sinfo->filled |= STATION_INFO_INACTIVE_TIME;
+		sinfo->filled |= BIT(NL80211_STA_INACTIVE_TIME;
 		sinfo->inactive_time = rP2pStaInfo.u4InactiveTime;
 		sinfo->generation = prP2pGlueInfo->i4Generation;
 
@@ -487,10 +487,10 @@ int mtk_p2p_cfg80211_scan(struct wiphy *wiphy, struct cfg80211_scan_request *req
 			DBGLOG(P2P, TRACE, "Scanning Channel: %d, freq: %d\n",
 			       prRfChannelInfo->ucChannelNum, prChannel->center_freq);
 			switch (prChannel->band) {
-			case IEEE80211_BAND_2GHZ:
+			case NL80211_BAND_2GHZ:
 				prRfChannelInfo->eBand = BAND_2G4;
 				break;
-			case IEEE80211_BAND_5GHZ:
+			case NL80211_BAND_5GHZ:
 				prRfChannelInfo->eBand = BAND_5G;
 				break;
 			default:
@@ -1714,10 +1714,10 @@ mtk_p2p_cfg80211func_channel_format_switch(IN struct ieee80211_channel *channel,
 			prRfChnlInfo->ucChannelNum = nicFreq2ChannelNum(channel->center_freq * 1000);
 
 			switch (channel->band) {
-			case IEEE80211_BAND_2GHZ:
+			case NL80211_BAND_2GHZ:
 				prRfChnlInfo->eBand = BAND_2G4;
 				break;
-			case IEEE80211_BAND_5GHZ:
+			case NL80211_BAND_5GHZ:
 				prRfChnlInfo->eBand = BAND_5G;
 				break;
 			default:

@@ -48,7 +48,6 @@
 #else
 #include <linux/fb.h>
 #endif
-#include <linux/uaccess.h>
 #include <linux/proc_fs.h>
 #include <mtk_wcn_cmb_stub.h>
 #include "osal_typedef.h"
@@ -66,10 +65,6 @@
 #include "wmt_idc.h"
 #include "wmt_detect.h"
 #include "hif_sdio.h"
-#include <linux/compat.h>
-#include <linux/device.h>
-#define BUF_LEN_MAX 384
-#include <linux/proc_fs.h>
 
 #ifdef CONFIG_COMPAT
 #define COMPAT_WMT_IOCTL_SET_PATCH_NAME		_IOW(WMT_IOC_MAGIC, 4, compat_uptr_t)
@@ -132,13 +127,12 @@ UINT32 pAtchNum = 0;
 
 
 
-#if CFG_WMT_PROC_FOR_AEE
+/*#if CFG_WMT_PROC_FOR_AEE
 static struct proc_dir_entry *gWmtAeeEntry;
-#define WMT_AEE_PROCNAME "driver/wmt_aee"
 #define WMT_PROC_AEE_SIZE 3072
 static UINT32 g_buf_len;
 static PUINT8 pBuf;
-#endif
+#endif*/
 
 #if WMT_CREATE_NODE_DYNAMIC
 struct class *wmt_class = NULL;
@@ -284,7 +278,7 @@ MTK_WCN_BOOL wmt_dev_get_early_suspend_state(VOID)
 	return bRet;
 }
 
-#if CFG_WMT_PROC_FOR_AEE
+/*#if CFG_WMT_PROC_FOR_AEE
 static ssize_t wmt_dev_proc_for_aee_read(struct file *filp, char __user *buf, size_t count,
 		loff_t *f_pos)
 {
@@ -345,10 +339,10 @@ static ssize_t wmt_dev_proc_for_aee_write(struct file *filp, const char __user *
 
 INT32 wmt_dev_proc_for_aee_setup(VOID)
 {
-	static const struct proc_ops wmt_aee_fops = {
-		//.owner = THIS_MODULE,
-		.proc_read = wmt_dev_proc_for_aee_read,
-		.proc_write = wmt_dev_proc_for_aee_write,
+	static const struct file_operations wmt_aee_fops = {
+		.owner = THIS_MODULE,
+		.read = wmt_dev_proc_for_aee_read,
+		.write = wmt_dev_proc_for_aee_write,
 	};
 
 	gWmtAeeEntry = proc_create(WMT_AEE_PROCNAME, 0664, NULL, &wmt_aee_fops);
@@ -367,7 +361,7 @@ INT32 wmt_dev_proc_for_aee_remove(VOID)
 
 	return 0;
 }
-#endif /* CFG_WMT_PROC_FOR_AEE */
+#endif *//* CFG_WMT_PROC_FOR_AEE */
 
 VOID wmt_dev_rx_event_cb(VOID)
 {
@@ -449,9 +443,8 @@ INT32 wmt_dev_read_file(PUINT8 pName, const PPUINT8 ppBufPtr, INT32 offset, INT3
 			} else
 				fd->f_pos = offset;
 		}
-                //fs=get_fs();
+
 		read_len = fd->f_op->read(fd, pBuf + padSzBuf, file_len, &fd->f_pos);
-                //set_fs(fs);
 		if (read_len != file_len)
 			WMT_WARN_FUNC("read abnormal: read_len(%d), file_len(%d)\n", read_len, file_len);
 	} while (false);
@@ -508,11 +501,11 @@ INT32 wmt_dev_patch_get(PUINT8 pPatchName, osal_firmware **ppPatch, INT32 padSzB
 	orig_gid = cred->fsgid.val;
 	cred->fsuid.val = cred->fsgid.val = 0;
 
-	//set_fs(get_ds());
+//	set_fs(get_ds());
 
 	/* load patch file from fs */
 	iRet = wmt_dev_read_file(pPatchName, (const PPUINT8)&pfw->data, 0, padSzBuf);
-	//set_fs(orig_fs);
+//	set_fs(orig_fs);
 
 	cred->fsuid.val = orig_uid;
 	cred->fsgid.val = orig_gid;
@@ -1070,7 +1063,7 @@ LONG WMT_unlocked_ioctl(struct file *filp, UINT32 cmd, ULONG arg)
 				WMT_ERR_FUNC("copy assert string failed\n");
 		}
 		pBuffer[NAME_MAX] = '\0';
-		osal_dbg_assert_aee(pBuffer, pBuffer);
+		//osal_dbg_assert_aee(pBuffer, pBuffer);
 		kfree(pBuffer);
 		break;
 	case 11:
@@ -1442,9 +1435,6 @@ static INT32 WMT_init(VOID)
 	wmt_dev_dbg_setup();
 #endif
 
-#if CFG_WMT_PROC_FOR_AEE
-	wmt_dev_proc_for_aee_setup();
-#endif
 
 	chip_type = wmt_detect_get_chip_type();
 	if (WMT_CHIP_TYPE_COMBO == chip_type)
@@ -1529,9 +1519,7 @@ static VOID WMT_exit(VOID)
 	wmt_dev_dbg_remove();
 #endif
 
-#if CFG_WMT_PROC_FOR_AEE
-	wmt_dev_proc_for_aee_remove();
-#endif
+
 #if WMT_CREATE_NODE_DYNAMIC
 	if (wmt_dev) {
 		device_destroy(wmt_class, dev);

@@ -126,23 +126,6 @@ static INT32 _stp_btm_handler(MTKSTP_BTM_T *stp_btm, P_STP_BTM_OP pStpOp)
 		break;
 
 	case STP_OPID_BTM_DUMP_TIMEOUT:
-#define FAKECOREDUMPEND "coredump end - fake"
-		dump_sink = mtk_wcn_stp_coredump_flag_get();
-		if (dump_sink == 2) {
-			UINT8 tmp[32];
-
-			tmp[0] = '[';
-			tmp[1] = 'M';
-			tmp[2] = ']';
-			tmp[3] = (UINT8)osal_sizeof(FAKECOREDUMPEND);
-			tmp[4] = 0;
-			osal_memcpy(&tmp[5], FAKECOREDUMPEND, osal_sizeof(FAKECOREDUMPEND));
-			/* stp_dump case, append fake coredump end message */
-			stp_dbg_set_coredump_timer_state(CORE_DUMP_DOING);
-			STP_BTM_WARN_FUNC("generate fake coredump message\n");
-			stp_dbg_dump_send_retry_handler((PINT8)&tmp, (INT32)osal_sizeof(FAKECOREDUMPEND)+5);
-		}
-
 		/* Flush dump data, and reset compressor */
 		STP_BTM_INFO_FUNC("Flush dump data\n");
 		stp_dbg_core_dump_flush(0, MTK_WCN_BOOL_TRUE);
@@ -657,7 +640,7 @@ static inline INT32 _stp_btm_do_fw_assert(MTKSTP_BTM_T *stp_btm)
 		if (stp_dbg_is_btif_rxd_be_blocked()) {
 			pbuf = "btif_rxd thread be blocked too long,just collect SYS_FTRACE to DB";
 			len = osal_strlen(pbuf);
-			//stp_dbg_trigger_collect_ftrace(pbuf, len);
+			stp_dbg_trigger_collect_ftrace(pbuf, len);
 	} else
 #endif
 		wmt_plat_force_trigger_assert(STP_FORCE_TRG_ASSERT_DEBUG_PIN);
@@ -679,7 +662,7 @@ static inline INT32 _stp_btm_do_fw_assert(MTKSTP_BTM_T *stp_btm)
 			pbuf = "Trigger assert timeout ,just collect SYS_FTRACE to DB";
 			len = osal_strlen(pbuf);
 			/* wcn_core_dump_timeout(); */
-			//stp_dbg_trigger_collect_ftrace(pbuf, len);
+			stp_dbg_trigger_collect_ftrace(pbuf, len);
 			break;
 		}
 

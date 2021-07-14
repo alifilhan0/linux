@@ -33,8 +33,8 @@
 */
 
 #include "osal.h"
-#include "osal_typedef.h"
 #include <linux/sched/debug.h>
+#include "osal_typedef.h"
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
@@ -252,7 +252,7 @@ INT32 osal_dbg_assert_aee(const PINT8 module, const PINT8 detail_description)
 
 #ifdef WMT_PLAT_ALPS
 	/* aee_kernel_warning(module,detail_description); */
-	aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_WCN_ISSUE_INFO, module, detail_description);
+	//aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_WCN_ISSUE_INFO, module, detail_description);
 #endif
 	return 0;
 }
@@ -290,12 +290,6 @@ PVOID osal_memcpy(PVOID dst, const PVOID src, UINT32 len)
 
 }
 
-VOID osal_memcpy_fromio(PVOID dst, const PVOID src, UINT32 len)
-{
-	return memcpy_fromio(dst, src, len);
-
-}
-
 INT32 osal_memcmp(const PVOID buf1, const PVOID buf2, UINT32 len)
 {
 	return memcmp(buf1, buf2, len);
@@ -314,9 +308,9 @@ UINT16 osal_crc16(const PUINT8 buffer, const UINT32 length)
 	return crc;
 }
 
-_osal_inline_ VOID osal_thread_show_stack(P_OSAL_THREAD pThread)
+VOID osal_thread_show_stack(P_OSAL_THREAD pThread)
 {
-	return show_stack(pThread->pThread, NULL, KERN_DEFAULT);
+	return show_stack(pThread->pThread, NULL,  KERN_DEFAULT);
 }
 
 /*
@@ -624,11 +618,10 @@ INT32 osal_timer_create(P_OSAL_TIMER pTimer)
 {
 	struct timer_list *timer = &pTimer->timer;
 
-	/*init_timer(timer);
-	timer->function = pTimer->timeoutHandler;
-	timer->data = (ULONG)pTimer->timeroutHandlerData;*/
-	timer_setup(timer,pTimer->timeoutHandler,0);
-        return 0;
+	timer_setup(timer, pTimer->timeoutHandler, 0);
+	//timer->function = pTimer->timeoutHandler;
+	//timer->data = (ULONG)pTimer->timeroutHandlerData;
+	return 0;
 }
 
 INT32 osal_timer_start(P_OSAL_TIMER pTimer, UINT32 ms)
@@ -1025,27 +1018,27 @@ INT32 osal_wake_lock_init(P_OSAL_WAKE_LOCK pLock)
 {
 	if (!pLock)
 		return -1;
+    if((pLock->wake_lock = wakeup_source_create(pLock->name)))
+        wakeup_source_add(pLock->wake_lock);
 
-	if((pLock->wake_lock = wakeup_source_create(pLock->name)))
-		wakeup_source_add(pLock->wake_lock);
-	return 0;
+
+    return 0;
 }
 
 INT32 osal_wake_lock_deinit(P_OSAL_WAKE_LOCK pLock)
 {
 	if (!pLock)
 		return -1;
-	wakeup_source_remove(pLock->wake_lock);
-	wakeup_source_destroy(pLock->wake_lock);
 
-    return 0;
+
+	wakeup_source_destroy(pLock->wake_lock);
+	return 0;
 }
 
 INT32 osal_wake_lock(P_OSAL_WAKE_LOCK pLock)
 {
 	if (!pLock)
 		return -1;
-
 	__pm_stay_awake(pLock->wake_lock);
 
 	return 0;
@@ -1056,7 +1049,9 @@ INT32 osal_wake_unlock(P_OSAL_WAKE_LOCK pLock)
 	if (!pLock)
 		return -1;
 
+
 	__pm_relax(pLock->wake_lock);
+
 
 	return 0;
 
@@ -1068,7 +1063,6 @@ INT32 osal_wake_lock_count(P_OSAL_WAKE_LOCK pLock)
 
 	if (!pLock)
 		return -1;
-
 	count = pLock->wake_lock->active;
 	return count;
 }
@@ -1167,7 +1161,7 @@ INT32 osal_gettimeofday(PINT32 sec, PINT32 usec)
 		ret = -1;
 
 	if (usec != NULL)
-		*usec = now.tv_nsec;
+		*usec = now.tv_nsec/1000;
 	else
 		ret = -1;
 

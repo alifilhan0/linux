@@ -244,7 +244,9 @@ extern INT32 wmt_lib_rx(PUINT8 buff, UINT32 buffLen, PUINT32 readSize);
 extern VOID wmt_lib_flush_rx(VOID);
 extern UINT32 wmt_lib_co_clock_flag_get(VOID);
 
-
+#if WMT_PLAT_ALPS
+extern PINT8 wmt_uart_port_desc;	/* defined in mtk_wcn_cmb_stub_alps.cpp */
+#endif
 
 #if CFG_WMT_PS_SUPPORT
 extern INT32 wmt_lib_ps_set_idle_time(UINT32 psIdleTime);

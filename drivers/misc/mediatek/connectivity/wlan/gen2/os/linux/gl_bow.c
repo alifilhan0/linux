@@ -346,9 +346,9 @@ static long mt6620_ampc_ioctl(IN struct file *filp, IN unsigned int cmd, IN OUT 
 		return -EFAULT;
 	/* permission check */
 	if (_IOC_DIR(cmd) & _IOC_READ)
-		err = !access_ok(/*VERIFY_WRITE,*/ (void __user *)arg, _IOC_SIZE(cmd));
+		err = !access_ok((void __user *)arg, _IOC_SIZE(cmd));
 	else if (_IOC_DIR(cmd) & _IOC_WRITE)
-		err = !access_ok(/*VERIFY_READ,*/ (void __user *)arg, _IOC_SIZE(cmd));
+		err = !access_ok((void __user *)arg, _IOC_SIZE(cmd));
 	if (err)
 		return -EFAULT;
 
@@ -892,14 +892,15 @@ static int bowHardStartXmit(IN struct sk_buff *prSkb, IN struct net_device *prDe
 		GLUE_INC_REF_CNT(prGlueInfo->i4TxPendingFrameNum);
 		GLUE_INC_REF_CNT(prGlueInfo->ai4TxPendingFrameNumPerQueue[NETWORK_TYPE_BOW_INDEX][u2QueueIdx]);
 		if (prGlueInfo->ai4TxPendingFrameNumPerQueue[NETWORK_TYPE_BOW_INDEX][u2QueueIdx] >=
-				CFG_TX_STOP_NETIF_PER_QUEUE_THRESHOLD)
-			DBGLOG(TX, INFO, "netif_stop_subqueue for BOW, Queue len: %d\n",
+				CFG_TX_STOP_NETIF_PER_QUEUE_THRESHOLD) {
+            DBGLOG(TX, INFO, "netif_stop_subqueue for BOW, Queue len: %d\n",
 				prGlueInfo->ai4TxPendingFrameNumPerQueue[NETWORK_TYPE_BOW_INDEX][u2QueueIdx]);
 
-			    netif_stop_subqueue(prDev, u2QueueIdx);
+			netif_stop_subqueue(prDev, u2QueueIdx);}
 	} else {
 		GLUE_INC_REF_CNT(prGlueInfo->i4TxPendingSecurityFrameNum);
 	}
+
 	kalSetEvent(prGlueInfo);
 	/* For Linux, we'll always return OK FLAG, because we'll free this skb by ourself */
 	return NETDEV_TX_OK;

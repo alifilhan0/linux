@@ -381,7 +381,7 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 			sinfo->txrate.legacy = prGlueInfo->u4LinkSpeedCache;
 			return -EBUSY;
 		} else {
-			/* sinfo->filled |= STATION_INFO_TX_BITRATE; */
+			/* sinfo->filled |= BIT(NL80211_STA_TX_BITRATE; */
 			sinfo->txrate.legacy = u4Rate / 1000;	/* convert from 100bps to 100kbps */
 			prGlueInfo->u4LinkSpeedCache = u4Rate / 1000;
 		}
@@ -1581,6 +1581,7 @@ void mtk_cfg80211_update_mgmt_frame_register(IN struct wiphy *wiphy,
 	} while (FALSE);
 
 }				/* mtk_cfg80211_mgmt_frame_register */
+				/* mtk_cfg80211_mgmt_frame_register */
 
 /*----------------------------------------------------------------------------*/
 /*!

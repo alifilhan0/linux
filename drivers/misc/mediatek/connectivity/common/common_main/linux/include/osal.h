@@ -206,6 +206,7 @@ typedef struct _OSAL_LXOP_Q {
 
 typedef struct _OSAL_WAKE_LOCK_ {
 	struct wakeup_source *wake_lock;
+
 	UINT8 name[MAX_WAKE_LOCK_NAME_LEN];
 } OSAL_WAKE_LOCK, *P_OSAL_WAKE_LOCK;
 #if 1
@@ -261,7 +262,6 @@ PVOID osal_malloc(UINT32 size);
 VOID osal_free(const PVOID dst);
 PVOID osal_memset(PVOID buf, INT32 i, UINT32 len);
 PVOID osal_memcpy(PVOID dst, const PVOID src, UINT32 len);
-VOID osal_memcpy_fromio(PVOID dst, const PVOID src, UINT32 len);
 INT32 osal_memcmp(const PVOID buf1, const PVOID buf2, UINT32 len);
 
 UINT16 osal_crc16(const PUINT8 buffer, const UINT32 length);

@@ -235,4 +235,9 @@ extern int get_eint_attribute(char *name, unsigned int name_len, unsigned int ty
 extern bool is_clk_buf_from_pmic(void);
 extern void clk_buf_get_rf_drv_curr(void *rf_drv_curr);
 extern void clk_buf_save_afc_val(unsigned int afcdac);
+#ifdef CONFIG_MEDIATEK_MT6577_AUXADC
+int ccci_get_adc_num(void);
+int ccci_get_adc_val(void);
+#endif
+
 #endif	/* __PORT_RPC_H__ */

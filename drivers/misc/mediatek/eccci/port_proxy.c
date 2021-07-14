@@ -11,6 +11,7 @@
  * GNU General Public License for more details.
  */
 #include <linux/kthread.h>
+#include <linux/sched/signal.h>
 #include "ccci_config.h"
 #include "ccci_core.h"
 #include "ccci_bm.h"
@@ -34,6 +35,15 @@
 /*REGION: port class default method implementation*/
 /*******************************************************************************************/
 /* structure initialize */
+static int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid)
+{
+        int error;
+        rcu_read_lock();
+        error = kill_pid_info(sig, info, find_vpid(pid));
+        rcu_read_unlock();
+        return error;
+}
+
 static inline void port_struct_init(struct ccci_port *port, struct port_proxy *port_p)
 {
 	INIT_LIST_HEAD(&port->entry);

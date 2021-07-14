@@ -306,16 +306,13 @@ int md_ccif_let_md_go(struct ccci_modem *md)
 		/*step 3: PMIC VTCXO_1 enable */
 		//pmic_config_interface(0x0A02, 0xA12E, 0xFFFF, 0x0);
 		/*step 4: reset C2K */
-#if 0
+
 		ccif_write32(md_ctrl->hw_info->toprgu_base,
 			     TOP_RGU_WDT_SWSYSRST,
 			     (ccif_read32
 			      (md_ctrl->hw_info->toprgu_base,
 			       TOP_RGU_WDT_SWSYSRST) | 0x88000000) & (~(0x1 <<
 									15)));
-#else
-		mtk_wdt_set_c2k_sysrst(1);
-#endif
 		CCCI_NORMAL_LOG(md->index, TAG,
 			     "[C2K] TOP_RGU_WDT_SWSYSRST = 0x%x\n",
 			     ccif_read32(md_ctrl->hw_info->toprgu_base,

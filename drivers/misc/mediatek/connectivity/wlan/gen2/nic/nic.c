@@ -805,6 +805,7 @@ P_CMD_INFO_T nicGetPendingCmdInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSeqNum)
 	P_CMD_INFO_T prCmdInfo = (P_CMD_INFO_T) NULL;
 
 	GLUE_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prAdapter);
 
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_PENDING);
@@ -851,7 +852,7 @@ P_MSDU_INFO_T nicGetPendingTxMsduInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSeqN
 	P_QUE_ENTRY_T prQueueEntry = (P_QUE_ENTRY_T) NULL;
 	P_MSDU_INFO_T prMsduInfo = (P_MSDU_INFO_T) NULL;
 
-	unsigned long __u4Flags = 0;
+	GLUE_SPIN_LOCK_DECLARATION();
 
 	ASSERT(prAdapter);
 
@@ -888,7 +889,7 @@ P_MSDU_INFO_T nicGetPendingStaMMPDU(IN P_ADAPTER_T prAdapter, IN UINT_8 ucStaRec
 	P_QUE_T prTempQue = &rTempQue;
 	P_QUE_ENTRY_T prQueueEntry = (P_QUE_ENTRY_T) NULL;
 	P_MSDU_INFO_T prMsduInfo = (P_MSDU_INFO_T) NULL;
-	unsigned long __u4Flags = 0;
+	GLUE_SPIN_LOCK_DECLARATION();
 
 	if (prAdapter == NULL) {
 		ASSERT(FALSE);
@@ -934,7 +935,7 @@ VOID nicFreePendingTxMsduInfoByNetwork(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK
 	P_MSDU_INFO_T prMsduInfoListTail = (P_MSDU_INFO_T) NULL;
 	P_MSDU_INFO_T prMsduInfo = (P_MSDU_INFO_T) NULL;
 
-	unsigned long __u4Flags = 0;
+	GLUE_SPIN_LOCK_DECLARATION();
 
 	ASSERT(prAdapter);
 

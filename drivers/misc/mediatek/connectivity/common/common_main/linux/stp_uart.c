@@ -355,7 +355,7 @@ static VOID stp_uart_tty_receive(struct tty_struct *tty, const unsigned char *da
 
 		ktime_get_real_ts64(&now);
 		pr_warn("[+STP][  ][R] %4d --> sec = %lu, --> usec --> %lu\n",
-			count, now.tv_sec, now.tv_nsec);
+			count, now.tv_sec, now.tv_usec);
 	}
 #endif
 /* write_lock(&g_stp_uart_rx_handling_lock); */
@@ -380,7 +380,7 @@ static VOID stp_uart_tty_receive(struct tty_struct *tty, const unsigned char *da
 
 		ktime_get_real_ts64(&now);
 		pr_warn("[-STP][  ][R] %4d --> sec = %lu, --> usec --> %lu\n",
-			count, now.tv_sec, now.tv_nsec);
+			count, now.tv_sec, now.tv_usec);
 	}
 #endif
 
@@ -542,7 +542,7 @@ static VOID stp_uart_tty_receive(struct tty_struct *tty, const PUINT8 data, PINT
 		ktime_get_real_ts64(&now);
 
 		pr_warn("[+STP][  ][R] %4d --> sec = %d, --> usec --> %d\n",
-			count, now.tv_sec, now.tv_nsec);
+			count, now.tv_sec, now.tv_usec);
 	}
 #endif
 
@@ -564,7 +564,7 @@ static VOID stp_uart_tty_receive(struct tty_struct *tty, const PUINT8 data, PINT
 		ktime_get_real_ts64(&now);
 
 		pr_warn("[-STP][  ][R] %4d --> sec = %d, --> usec --> %d\n",
-			count, now.tv_sec, now.tv_nsec);
+			count, now.tv_sec, now.tv_usec);
 	}
 #endif
 }
@@ -591,7 +591,7 @@ static INT32 stp_uart_tty_ioctl(struct tty_struct *tty, struct file *file, UINT3
 
 	switch (cmd) {
 	case HCIUARTSETPROTO:
-		//UART_DBG_FUNC("<!!> Set low_latency to TRUE <!!>\n");
+		UART_DBG_FUNC("<!!> Set low_latency to TRUE <!!>\n");
 		//tty->port->low_latency = 1;
 
 		break;
@@ -769,17 +769,17 @@ static INT32 mtk_wcn_stp_uart_init(VOID)
 
 	/* Register the tty discipline */
 	memset(&stp_uart_ldisc, 0, sizeof(stp_uart_ldisc));
-	stp_uart_ldisc.magic            = TTY_LDISC_MAGIC;
-	stp_uart_ldisc.name             = "n_mtkstp";
-	stp_uart_ldisc.open             = stp_uart_tty_open;
-	stp_uart_ldisc.close            = stp_uart_tty_close;
-	stp_uart_ldisc.read             = stp_uart_tty_read;
-	stp_uart_ldisc.write            = stp_uart_tty_write;
-	stp_uart_ldisc.ioctl            = stp_uart_tty_ioctl;
-	stp_uart_ldisc.poll             = stp_uart_tty_poll;
-	stp_uart_ldisc.receive_buf      = stp_uart_tty_receive;
-	stp_uart_ldisc.write_wakeup     = stp_uart_tty_wakeup;
-	stp_uart_ldisc.owner            = THIS_MODULE;
+	stp_uart_ldisc.magic = TTY_LDISC_MAGIC;
+	stp_uart_ldisc.name = "n_mtkstp";
+	stp_uart_ldisc.open = stp_uart_tty_open;
+	stp_uart_ldisc.close = stp_uart_tty_close;
+	stp_uart_ldisc.read = stp_uart_tty_read;
+	stp_uart_ldisc.write = stp_uart_tty_write;
+	stp_uart_ldisc.ioctl = stp_uart_tty_ioctl;
+	stp_uart_ldisc.poll = stp_uart_tty_poll;
+	stp_uart_ldisc.receive_buf = stp_uart_tty_receive;
+	stp_uart_ldisc.write_wakeup = stp_uart_tty_wakeup;
+	stp_uart_ldisc.owner = THIS_MODULE;
 
 	err = tty_register_ldisc(N_MTKSTP, &stp_uart_ldisc);
 	if (err) {

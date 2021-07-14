@@ -31,5 +31,5 @@ int do_bluetooth_drv_init(int chip_id)
 #else
 	WMT_DETECT_INFO_FUNC("CONFIG_MTK_COMBO_BT is not defined\n");
 #endif
-	return i_ret;
+	return -1;
 }
