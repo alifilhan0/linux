@@ -35,12 +35,12 @@
 
 #ifdef MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 
-#if (WMT_IDC_SUPPORT)
-#define CFG_WMT_LTE_COEX_HANDLING 1
-#define CFG_WMT_LTE_ENABLE_MSGID_MAPPING 0
-#else
+//#if (WMT_IDC_SUPPORT)
+//#define CFG_WMT_LTE_COEX_HANDLING 1
+//#define CFG_WMT_LTE_ENABLE_MSGID_MAPPING 0
+//#else
 #define CFG_WMT_LTE_COEX_HANDLING 0
-#endif
+//#endif
 
 #define BT_TASK_INDX        (0)
 #define FM_TASK_INDX        (1)

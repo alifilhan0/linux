@@ -11,16 +11,16 @@ subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eccci/$(MTK_PLATFORM)
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eemcs/
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/conn_md/include
 
-subdir-ccflags-y += -D WMT_PLAT_ALPS=0
-subdir-ccflags-y += -D WMT_UART_RX_MODE_WORK=0 # 1. work thread 0. tasklet
-subdir-ccflags-y += -D WMT_SDIO_MODE=1
+subdir-ccflags-y += -DWMT_PLAT_ALPS=0
+subdir-ccflags-y += -DWMT_UART_RX_MODE_WORK=0 # 1. work thread 0. tasklet
+subdir-ccflags-y += -DWMT_SDIO_MODE=1
 
 EXT_FLAG=_soc
 COMMON_SRC_PATH := $(src)
 COMMON_OBJ_PATH := $(src)
 
 ifeq ($(CONFIG_ARCH_MT6580), y)
-subdir-ccflags-y += -D CFG_WMT_READ_EFUSE_VCN33
+subdir-ccflags-y += -DCFG_WMT_READ_EFUSE_VCN33
 endif
 
 ifeq ($(CONFIG_MTK_COMBO), m)

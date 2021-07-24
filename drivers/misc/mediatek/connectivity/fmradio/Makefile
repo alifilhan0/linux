@@ -25,14 +25,14 @@ ifeq ($(FM_CHIP), mt6625)
 	subdir-ccflags-y += -DMT6625_FM
 endif
 
-$(warning FM_CHIP := $(FM_CHIP))
+#$(warning FM_CHIP := $(FM_CHIP))
 	WMT_INCLUDE_PATH := common_main
 	FM_CHIP_PATH := $(FM_CHIP)/pub/$(FM_CHIP)
 	subdir-ccflags-y += -D$(FM_CHIP_MACRO)
-	subdir-ccflags-y += -I$(src)/inc \
-					-I$(src)/$(FM_CHIP)/inc \
-					-I$(src)/../common/$(WMT_INCLUDE_PATH)/include \
-					-I$(src)/../common/$(WMT_INCLUDE_PATH)/linux/include
+	subdir-ccflags-y += -I$(srctree)/$(src)/inc \
+					-I$(srctree)/$(src)/$(FM_CHIP)/inc \
+					-I$(srctree)/$(src)/../common/$(WMT_INCLUDE_PATH)/include \
+					-I$(srctree)/$(src)/../common/$(WMT_INCLUDE_PATH)/linux/include
 
 	obj-$(CONFIG_MTK_FMRADIO) += mtk_fm_drv.o
 	$(FM_CHIP)-objs	:= core/fm_module.o \
@@ -47,7 +47,7 @@ $(warning FM_CHIP := $(FM_CHIP))
 					$(FM_CHIP_PATH)_fm_lib.o \
 					$(FM_CHIP_PATH)_fm_rds.o
 	mtk_fm_drv-objs += $($(FM_CHIP)-objs)
-$(warning $(mtk_fm_drv-objs))
+#$(warning $(mtk_fm_drv-objs))
 	#obj-$(CONFIG_MTK_FMRADIO) += private/
 endif
 

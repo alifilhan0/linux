@@ -14,13 +14,13 @@
 # CONN-MD Bridge Driver
 # If KERNELRELEASE is defined, we've been invoked from the
 # kernel build system and can use its language.
-ifneq ($(KERNELRELEASE),)
+#ifneq ($(KERNELRELEASE),)
 
     ccflags-$(CONFIG_MTK_ECCCI_DRIVER) += -I$(srctree)/drivers/misc/mediatek/eccci/$(MTK_PLATFORM)
     ccflags-$(CONFIG_MTK_ECCCI_DRIVER) += -I$(srctree)/drivers/misc/mediatek/eccci/
     ccflags-$(CONFIG_MTK_CCCI_EXT) += -I$(srctree)/drivers/misc/mediatek/dual_ccci/
 
-    ccflags-y += -I$(src)/include/
+    ccflags-y += -I$(srctree)/$(src)/include/
 
     obj-y += conn_md_bridge.o
     conn_md_bridge-objs := conn_md.o
@@ -32,11 +32,11 @@ ifneq ($(KERNELRELEASE),)
 
 # Otherwise we were called directly from the command
 # line; invoke the kernel build system.
-else
-    KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-    PWD  := $(shell pwd)
+#else
+#    KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+#    PWD  := $(shell pwd)
 
-default:
+#default:
 	$(MAKE) -C
 
-endif
+#endif
