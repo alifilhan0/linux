@@ -30,11 +30,11 @@
 #include <linux/proc_fs.h>
 #include <linux/of.h>
 
-#include <mt-plat/mt_boot.h>
+#include <mt-plat/mtk_boot.h>
 
 unsigned int g_meta_com_type = META_UNKNOWN_COM;
-unsigned int g_meta_com_id = 0;
-unsigned int g_meta_uart_port = 0;
+unsigned int g_meta_com_id;
+unsigned int g_meta_uart_port;
 
 static struct platform_driver meta_com_type_info = {
 	.driver = {
@@ -75,8 +75,8 @@ struct boot_tag_meta_com {
 };
 #endif
 
-/* usb android will check whether is com port enabled default.
-   in normal boot it is default enabled. */
+/* usb android will check whether is com port enabled default.*/
+/* in normal boot it is default enabled. */
 bool com_is_enable(void)
 {
 	if (get_boot_mode() == NORMAL_BOOT)
@@ -101,46 +101,47 @@ unsigned int get_meta_uart_port(void)
 }
 
 
-static ssize_t meta_com_type_show(struct device_driver *driver, char *buf)
+static ssize_t meta_com_type_info_show(struct device_driver *driver, char *buf)
 {
 	return sprintf(buf, "%d\n", g_meta_com_type);
 }
 
-static ssize_t meta_com_type_store(struct device_driver *driver, const char *buf, size_t count)
+static ssize_t meta_com_type_info_store(struct device_driver *driver,
+	const char *buf, size_t count)
 {
 	/*Do nothing */
 	return count;
 }
 
-//DRIVER_ATTR(meta_com_type_info, 0644, meta_com_type_show, meta_com_type_store);
-static DRIVER_ATTR_RW(meta_com_type);
+DRIVER_ATTR_RW(meta_com_type_info);
 
-static ssize_t meta_com_id_show(struct device_driver *driver, char *buf)
+static ssize_t meta_com_id_info_show(struct device_driver *driver, char *buf)
 {
 	return sprintf(buf, "%d\n", g_meta_com_id);
 }
 
-static ssize_t meta_com_id_store(struct device_driver *driver, const char *buf, size_t count)
+static ssize_t meta_com_id_info_store(struct device_driver *driver,
+	const char *buf, size_t count)
 {
 	/*Do nothing */
 	return count;
 }
 
-//DRIVER_ATTR(meta_com_id_info, 0644, meta_com_id_show, meta_com_id_store);
-static DRIVER_ATTR_RW(meta_com_id);
-static ssize_t meta_uart_port_show(struct device_driver *driver, char *buf)
+DRIVER_ATTR_RW(meta_com_id_info);
+
+static ssize_t meta_uart_port_info_show(struct device_driver *driver, char *buf)
 {
 	return sprintf(buf, "%d\n", g_meta_uart_port);
 }
 
-static ssize_t meta_uart_port_store(struct device_driver *driver, const char *buf, size_t count)
+static ssize_t meta_uart_port_info_store(struct device_driver *driver,
+	const char *buf, size_t count)
 {
 	/*Do nothing */
 	return count;
 }
 
-//DRIVER_ATTR(meta_uart_port_info, 0644, meta_uart_port_show, meta_uart_port_store);
-static DRIVER_ATTR_RW(meta_uart_port);
+DRIVER_ATTR_RW(meta_uart_port_info);
 
 static int __init create_sysfs(void)
 {
@@ -151,34 +152,39 @@ static int __init create_sysfs(void)
 	if (of_chosen) {
 		struct boot_tag_meta_com *tags;
 
-		tags = (struct boot_tag_meta_com *)of_get_property(of_chosen, "atag,meta", NULL);
+		tags = (struct boot_tag_meta_com *)of_get_property(of_chosen,
+				"atag,meta", NULL);
 		if (tags) {
 			g_meta_com_type = tags->meta_com_type;
 			g_meta_com_id = tags->meta_com_id;
 			g_meta_uart_port = tags->meta_uart_port;
 			pr_debug
-			    ("[%s] g_meta_com_type = %d, g_meta_com_id = %d, g_meta_uart_port=%d.\n",
-			     __func__, g_meta_com_type, g_meta_com_id, g_meta_uart_port);
+			    ("[%s] com_type = %d, com_id = %d, uart_port=%d.\n",
+				__func__, g_meta_com_type, g_meta_com_id,
+				g_meta_uart_port);
 		} else
 			pr_warn("[%s] No atag,meta found !\n", __func__);
 	} else
 		pr_warn("[%s] of_chosen is NULL !\n", __func__);
 #endif
 
-	if (bm == META_BOOT || bm == ADVMETA_BOOT || bm == ATE_FACTORY_BOOT || bm == FACTORY_BOOT) {
+	if (bm == META_BOOT || bm == ADVMETA_BOOT || bm == ATE_FACTORY_BOOT
+		|| bm == FACTORY_BOOT) {
 		/* register driver and create sysfs files */
 		ret = driver_register(&meta_com_type_info.driver);
 		if (ret)
 			pr_warn("fail to register META COM TYPE driver\n");
 		ret =
-		    driver_create_file(&meta_com_type_info.driver, &driver_attr_meta_com_type);
+		    driver_create_file(&meta_com_type_info.driver,
+				&driver_attr_meta_com_type_info);
 		if (ret)
 			pr_warn("fail to create META COM TPYE sysfs file\n");
 
 		ret = driver_register(&meta_com_id_info.driver);
 		if (ret)
 			pr_warn("fail to register META COM ID driver\n");
-		ret = driver_create_file(&meta_com_id_info.driver, &driver_attr_meta_com_id);
+		ret = driver_create_file(&meta_com_id_info.driver,
+				&driver_attr_meta_com_id_info);
 		if (ret)
 			pr_warn("fail to create META COM ID sysfs file\n");
 		ret = driver_register(&meta_uart_port_info.driver);
@@ -186,7 +192,7 @@ static int __init create_sysfs(void)
 			pr_warn("fail to register META UART PORT driver\n");
 		ret =
 		    driver_create_file(&meta_uart_port_info.driver,
-				       &driver_attr_meta_uart_port);
+				       &driver_attr_meta_uart_port_info);
 		if (ret)
 			pr_warn("fail to create META UART PORT sysfs file\n");
 	}

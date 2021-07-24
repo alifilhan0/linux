@@ -156,6 +156,8 @@ static const struct of_device_id mtk_spi_of_match[] = {
 	{ .compatible = "mediatek,mt6765-spi",
 		.data = (void *)&mt6765_compat,
 	},
+    { .compatible = "mediatek,mt6735-spi",
+		.data = (void *)&mt8173_compat,
 	{ .compatible = "mediatek,mt7622-spi",
 		.data = (void *)&mt7622_compat,
 	},

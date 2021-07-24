@@ -19,7 +19,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLA
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 
 obj-$(CONFIG_MTK_ECCCI_C2K) += c2k_usb/
-
+obj-y += clkbuf_v1/
 obj-$(CONFIG_MTK_CCCI_DEVICES)	+=  ccci_util/
 obj-$(CONFIG_MTK_NET_CCMNI) +=  ccmni/
 obj-$(CONFIG_MTK_CCCI_EXT)     +=  dual_ccci/
@@ -31,4 +31,5 @@ obj-$(CONFIG_MTK_BTIF) += btif/
 obj-$(CONFIG_MTK_CONN_MD) += conn_md/
 obj-$(CONFIG_LCT_SIM_CHECK) += sim_check/
 obj-y += boot/
+obj-y += boot_reason/
 #obj-y  += wmt_ccci/

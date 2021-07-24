@@ -35,3 +35,4 @@ endmenu
 # Longcheer add for sim check
 source "drivers/misc/mediatek/sim_check/Kconfig"
 source "drivers/misc/mediatek/boot/Kconfig"
+source "drivers/misc/mediatek/boot_reason/Kconfig"

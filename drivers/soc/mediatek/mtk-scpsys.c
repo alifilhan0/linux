@@ -19,6 +19,7 @@
 #include <dt-bindings/power/mt7622-power.h>
 #include <dt-bindings/power/mt7623a-power.h>
 #include <dt-bindings/power/mt8173-power.h>
+#include <dt-bindings/power/mt6735-power.h>
 
 #define MTK_POLL_DELAY_US   10
 #define MTK_POLL_TIMEOUT    USEC_PER_SEC
@@ -635,6 +636,87 @@ static const struct scp_domain_data scp_domain_data_mt2701[] = {
 	},
 };
 
+static const struct scp_domain_data scp_domain_data_mt6735[] = {
+	[MT6735_POWER_DOMAIN_CONN] = {
+		.name = "conn",
+		.sta_mask = PWR_STATUS_CONN,
+		.ctl_offs = SPM_CONN_PWR_CON,
+        .sram_pdn_bits = 0,
+		.sram_pdn_ack_bits = 0,
+		.bus_prot_mask = MT2701_TOP_AXI_PROT_EN_CONN_M |
+				 MT2701_TOP_AXI_PROT_EN_CONN_S,
+		.clk_id = {CLK_NONE},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+	},
+    [MT6735_POWER_DOMAIN_VENC] = {
+		.name = "venc",
+		.sta_mask = PWR_STATUS_VENC,
+		.ctl_offs = SPM_VEN_PWR_CON,
+		.sram_pdn_bits = GENMASK(11, 8),
+		.sram_pdn_ack_bits = GENMASK(15, 12),
+		.clk_id = {CLK_MM, CLK_VENC, CLK_JPGDEC},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+    },
+
+	[MT6735_POWER_DOMAIN_DISP] = {
+		.name = "disp",
+		.sta_mask = PWR_STATUS_DISP,
+		.ctl_offs = SPM_DIS_PWR_CON,
+		.sram_pdn_bits = GENMASK(11, 8),
+		.sram_pdn_ack_bits = GENMASK(12, 12),
+		.clk_id = {CLK_MM},
+		.bus_prot_mask = MT2701_TOP_AXI_PROT_EN_MM_M0,
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+	},
+	[MT6735_POWER_DOMAIN_MFG] = {
+		.name = "mfg",
+		.sta_mask = PWR_STATUS_MFG,
+		.ctl_offs = SPM_MFG_PWR_CON,
+		.sram_pdn_bits = GENMASK(11, 8),
+		.sram_pdn_ack_bits = GENMASK(12, 12),
+		.clk_id = {CLK_MFG},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+	},
+	[MT6735_POWER_DOMAIN_VDEC] = {
+		.name = "vdec",
+		.sta_mask = PWR_STATUS_VDEC,
+		.ctl_offs = SPM_VDE_PWR_CON,
+		.sram_pdn_bits = GENMASK(11, 8),
+		.sram_pdn_ack_bits = GENMASK(12, 12),
+		.clk_id = {CLK_MM},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+	},
+	[MT6735_POWER_DOMAIN_ISP] = {
+		.name = "isp",
+		.sta_mask = PWR_STATUS_ISP,
+		.ctl_offs = SPM_ISP_PWR_CON,
+		.sram_pdn_bits = GENMASK(11, 8),
+		.sram_pdn_ack_bits = GENMASK(13, 12),
+		.clk_id = {CLK_MM},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+	},
+    [MT6735_POWER_DOMAIN_MD1] = {
+		.name = "md1",
+		.sta_mask = BIT(0),
+		.ctl_offs = 0x0284,
+        .sram_pdn_bits = 0,
+		.sram_pdn_ack_bits = 0,
+		.bus_prot_mask = (BIT(24) | BIT(25) | BIT(26) | BIT(27) | BIT(28)),
+		.clk_id = {CLK_NONE},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+	},
+    [MT6735_POWER_DOMAIN_MD2] = {
+		.name = "c2k",
+		.sta_mask = BIT(0),
+		.ctl_offs = 0x0284,
+        .sram_pdn_bits = 0,
+		.sram_pdn_ack_bits = 0,
+		.bus_prot_mask = (BIT(29) | BIT(30) | BIT(31)),
+		.clk_id = {CLK_NONE},
+		.caps = MTK_SCPD_ACTIVE_WAKEUP,
+    },
+};
+
 /*
  * MT2712 power domain support
  */
@@ -775,7 +857,7 @@ static const struct scp_domain_data scp_domain_data_mt6797[] = {
 		.name = "isp",
 		.sta_mask = BIT(5),
 		.ctl_offs = 0x308,
-		.sram_pdn_bits = GENMASK(9, 8),
+		.sram_pdn_bits = GENMASK(8, 8),
 		.sram_pdn_ack_bits = GENMASK(13, 12),
 		.clk_id = {CLK_NONE},
 	},
@@ -1021,6 +1103,16 @@ static const struct scp_soc_data mt2701_data = {
 	.bus_prot_reg_update = true,
 };
 
+static const struct scp_soc_data mt6735_data = {
+	.domains = scp_domain_data_mt6735,
+	.num_domains = ARRAY_SIZE(scp_domain_data_mt6735),
+	.regs = {
+		.pwr_sta_offs = SPM_PWR_STATUS,
+		.pwr_sta2nd_offs = SPM_PWR_STATUS_2ND
+	},
+	.bus_prot_reg_update = true,
+};
+
 static const struct scp_soc_data mt2712_data = {
 	.domains = scp_domain_data_mt2712,
 	.num_domains = ARRAY_SIZE(scp_domain_data_mt2712),
@@ -1097,6 +1189,9 @@ static const struct of_device_id of_scpsys_match_tbl[] = {
 	}, {
 		.compatible = "mediatek,mt7623a-scpsys",
 		.data = &mt7623a_data,
+    }, {
+        .compatible = "mediatek,mt6735-scpsys",
+		.data = &mt6735_data,
 	}, {
 		.compatible = "mediatek,mt8173-scpsys",
 		.data = &mt8173_data,

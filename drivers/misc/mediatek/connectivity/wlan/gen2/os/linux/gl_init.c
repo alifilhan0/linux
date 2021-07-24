@@ -287,7 +287,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = WIFI_SUBCMD_GET_CHANNEL_LIST
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_get_channel_list
+		.doit = mtk_cfg80211_vendor_get_channel_list,
+		.policy = wifi_vendor_test_policy
 	},
 	{
 		{
@@ -295,7 +296,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = WIFI_SUBCMD_SET_COUNTRY_CODE
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_set_country_code
+		.doit = mtk_cfg80211_vendor_set_country_code,
+		.policy = wifi_vendor_test_policy
 	},
 	/* GSCAN */
 #if CFG_SUPPORT_GSCN
@@ -305,7 +307,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_GET_CAPABILITIES
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_get_gscan_capabilities
+		.doit = mtk_cfg80211_vendor_get_gscan_capabilities,
+		.policy = gscan_vendor_test_policy
 	},
 	{
 		{
@@ -313,7 +316,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_SET_CONFIG
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_set_config
+		.doit = mtk_cfg80211_vendor_set_config,
+		.policy = gscan_vendor_test_policy
 	},
 	{
 		{
@@ -321,7 +325,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_SET_SCAN_CONFIG
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_set_scan_config
+		.doit = mtk_cfg80211_vendor_set_scan_config,
+		.policy = gscan_vendor_test_policy
 	},
 	{
 		{
@@ -329,7 +334,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_ENABLE_GSCAN
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_enable_scan
+		.doit = mtk_cfg80211_vendor_enable_scan,
+		.policy = gscan_vendor_test_policy
 	},
 	{
 		{
@@ -337,7 +343,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_ENABLE_FULL_SCAN_RESULTS
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_enable_full_scan_results
+		.doit = mtk_cfg80211_vendor_enable_full_scan_results,
+		.policy = gscan_vendor_test_policy
 	},
 	{
 		{
@@ -345,7 +352,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_GET_SCAN_RESULTS
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_get_gscan_result
+		.doit = mtk_cfg80211_vendor_get_gscan_result,
+		.policy = gscan_vendor_test_policy
 	},
 #endif
 	{
@@ -354,7 +362,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_SET_SIGNIFICANT_CHANGE_CONFIG
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_set_significant_change
+		.doit = mtk_cfg80211_vendor_set_significant_change,
+		.policy = gscan_vendor_test_policy
 	},
 	{
 		{
@@ -362,7 +371,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = GSCAN_SUBCMD_SET_HOTLIST
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_set_hotlist
+		.doit = mtk_cfg80211_vendor_set_hotlist,
+		.policy = gscan_vendor_test_policy
 	},
 	/* RTT */
 	{
@@ -371,7 +381,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = RTT_SUBCMD_GETCAPABILITY
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_get_rtt_capabilities
+		.doit = mtk_cfg80211_vendor_get_rtt_capabilities,
+		.policy = rtt_vendor_test_policy
 	},
 	/* Link Layer Statistics */
 	{
@@ -380,7 +391,8 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 			.subcmd = LSTATS_SUBCMD_GET_INFO
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
-		.doit = mtk_cfg80211_vendor_llstats_get_info
+		.doit = mtk_cfg80211_vendor_llstats_get_info,
+		.policy = lstats_vendor_test_policy
 	},
 	/* RSSI Monitoring */
 	{

@@ -27,9 +27,8 @@
 #endif /*CONFIG_MTK_CLKMGR */
 #include <mt-plat/upmu_common.h>
 #include <mach/mt_pbm.h>
-//#include <mt_spm_sleep.h>
-
-
+//#include "mt_spm_reg.h"
+#include "mt_clkbuf_ctl.h"
 #include "ccci_modem.h"
 #include "ccci_platform.h"
 #include "modem_cldma.h"
@@ -243,6 +242,8 @@ int md_cd_power_on(struct ccci_modem *md)
 	/* turn on VLTE */
 #ifdef FEATURE_VLTE_SUPPORT
 	struct pinctrl_state *vsram_output_high;
+    struct pinctrl_state *RFIC0_01_mode;
+
 
 	if (NULL != mdcldma_pinctrl) {
 		vsram_output_high = pinctrl_lookup_state(mdcldma_pinctrl, "vsram_output_high");
@@ -280,6 +281,13 @@ int md_cd_power_on(struct ccci_modem *md)
 	CCCI_NORMAL_LOG(md->index, CORE, "md_cd_power_on: set md1_srcclkena bit(0x1000_0338)=0x%x\n",
 		     ccci_read32(infra_ao_base, 0x338));
 
+    mutex_lock(&clk_buf_ctrl_lock);	/* fixme,clkbuf, ->down(&clk_buf_ctrl_lock_2); */
+	CCCI_NORMAL_LOG(md->index, TAG, "clock buffer, BSI ignore mode\n");
+	if (NULL != mdcldma_pinctrl) {
+		RFIC0_01_mode = pinctrl_lookup_state(mdcldma_pinctrl, "RFIC0_01_mode");
+		pinctrl_select_state(mdcldma_pinctrl, RFIC0_01_mode);
+	}
+
 	/* power on MD_INFRA and MODEM_TOP */
 	switch (md->index) {
 	case MD_SYS1:
@@ -298,6 +306,9 @@ int md_cd_power_on(struct ccci_modem *md)
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end kicker_pbm_by_md(0,true)\n");
 		break;
 	}
+#ifdef FEATURE_RF_CLK_BUF
+	mutex_unlock(&clk_buf_ctrl_lock);	/* fixme,clkbuf, ->delete */
+#endif
 
 #ifdef FEATURE_INFORM_NFC_VSIM_CHANGE
 	/* notify NFC */
@@ -344,6 +355,7 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 	int ret = 0;
 	int count = 50;
 	unsigned int reg_value;
+    struct pinctrl_state *RFIC0_04_mode;
 
 #if defined(FEATURE_VLTE_SUPPORT)
 	struct pinctrl_state *vsram_output_low;
@@ -368,6 +380,8 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 		}
 	}
 
+	mutex_lock(&clk_buf_ctrl_lock);
+
 	/* power off MD_INFRA and MODEM_TOP */
 	switch (md->index) {
 	case MD_SYS1:
@@ -375,14 +389,19 @@ int md_cd_power_off(struct ccci_modem *md, unsigned int stop_type)
 		ret = md_power_off(SYS_MD1, timeout);
 #else
 		clk_disable(clk_scp_sys_md1_main);
+        mutex_unlock(&clk_buf_ctrl_lock);
 
 		clk_unprepare(clk_scp_sys_md1_main);	/* cannot be called in mutex context */
 #endif
+        mutex_lock(&clk_buf_ctrl_lock);
 		//kicker_pbm_by_md(MD1, false);
 		CCCI_NORMAL_LOG(md->index, TAG, "Call end kicker_pbm_by_md(0,false)\n");
 		break;
 	}
-
+    CCCI_NORMAL_LOG(md->index, TAG, "clock buffer, AP SPM control mode\n");
+	RFIC0_04_mode = pinctrl_lookup_state(mdcldma_pinctrl, "RFIC0_04_mode");
+	pinctrl_select_state(mdcldma_pinctrl, RFIC0_04_mode);
+	mutex_unlock(&clk_buf_ctrl_lock);
 	reg_value = ccci_read32(infra_ao_base, 0x338);
 	reg_value &= ~(0x3 << 2);	/* md1_srcclkena */
 	ccci_write32(infra_ao_base, 0x338, reg_value);

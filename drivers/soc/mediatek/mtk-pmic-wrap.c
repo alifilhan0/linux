@@ -12,6 +12,7 @@
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/reset.h>
+#include <linux/mfd/mt6328/registers.h>
 
 #define PWRAP_MT8135_BRIDGE_IORD_ARB_EN		0x4
 #define PWRAP_MT8135_BRIDGE_WACS3_EN		0x10
@@ -142,6 +143,7 @@ enum dew_regs {
 	PWRAP_DEW_EVENT_TEST,
 	PWRAP_DEW_CIPHER_LOAD,
 	PWRAP_DEW_CIPHER_START,
+
 };
 
 static const u32 mt6323_regs[] = {
@@ -160,6 +162,24 @@ static const u32 mt6323_regs[] = {
 	[PWRAP_DEW_CIPHER_SWRST] =	0x01a2,
 	[PWRAP_DEW_RDDMY_NO] =		0x01a4,
 };
+static const u32 mt6328_regs[] = {
+      [PWRAP_DEW_BASE]            =   0x0000,
+      [PWRAP_DEW_DIO_EN]         =   0x02D4,
+      [PWRAP_DEW_READ_TEST]      =   0x02D6,
+      [PWRAP_DEW_WRITE_TEST]     =   0x02D8,
+      [PWRAP_DEW_CRC_SWRST]      =   0x02DA,
+      [PWRAP_DEW_CRC_EN]         =   0x02DC,
+      [PWRAP_DEW_CRC_VAL]        =   0x02DE,
+      [PWRAP_DEW_MON_GRP_SEL]    =   0x02E0,
+      [PWRAP_DEW_CIPHER_KEY_SEL] =   0x02E2,
+      [PWRAP_DEW_CIPHER_IV_SEL]  =   0x02E4,
+      [PWRAP_DEW_CIPHER_EN]      =   0x02E6,
+      [PWRAP_DEW_CIPHER_RDY]     =   0x02E8,
+      [PWRAP_DEW_CIPHER_MODE]    =   0x02EA,
+      [PWRAP_DEW_CIPHER_SWRST]   =   0x02EC,
+      [PWRAP_DEW_RDDMY_NO]       =   0x02EE,
+};
+
 
 static const u32 mt6351_regs[] = {
 	[PWRAP_DEW_DIO_EN] =		0x02F2,
@@ -435,6 +455,52 @@ enum pwrap_regs {
 	/* MT8516 only regs */
 	PWRAP_OP_TYPE,
 	PWRAP_MSB_FIRST,
+    /*MT6735 only regs */
+    PWRAP_EINT_STA,
+    PWRAP_EINT_CLR,
+    PWRAP_WACS3_EN,
+    PWRAP_WACS3_CMD,
+    PWRAP_WACS3_RDATA,
+    PWRAP_WACS3_VLDCLR,
+    PWRAP_MD_ADC_RDATA_ADDR_LATEST,
+    PWRAP_MD_ADC_RDATA_ADDR_WP,
+    PWRAP_MD_ADC_RDATA_ADDR0,
+    PWRAP_MD_ADC_RDATA_ADDR1,
+    PWRAP_MD_ADC_RDATA_ADDR2,
+    PWRAP_MD_ADC_RDATA_ADDR3,
+    PWRAP_MD_ADC_RDATA_ADDR4,
+    PWRAP_MD_ADC_RDATA_ADDR5,
+    PWRAP_MD_ADC_RDATA_ADDR6,
+    PWRAP_MD_ADC_RDATA_ADDR7,
+    PWRAP_MD_ADC_RDATA_ADDR8,
+    PWRAP_MD_ADC_RDATA_ADDR9,
+    PWRAP_MD_ADC_RDATA_ADDR10,
+    PWRAP_MD_ADC_RDATA_ADDR11,
+    PWRAP_MD_ADC_RDATA_ADDR12,
+    PWRAP_MD_ADC_RDATA_ADDR13,
+    PWRAP_MD_ADC_RDATA_ADDR14,
+    PWRAP_MD_ADC_RDATA_ADDR15,
+    PWRAP_MD_ADC_RDATA_ADDR16,
+    PWRAP_MD_ADC_RDATA_ADDR17,
+    PWRAP_MD_ADC_RDATA_ADDR18,
+    PWRAP_MD_ADC_RDATA_ADDR19,
+    PWRAP_MD_ADC_RDATA_ADDR20,
+    PWRAP_MD_ADC_RDATA_ADDR21,
+    PWRAP_MD_ADC_RDATA_ADDR22,
+    PWRAP_MD_ADC_RDATA_ADDR23,
+    PWRAP_MD_ADC_RDATA_ADDR24,
+    PWRAP_MD_ADC_RDATA_ADDR25,
+    PWRAP_MD_ADC_RDATA_ADDR26,
+    PWRAP_MD_ADC_RDATA_ADDR27,
+    PWRAP_MD_ADC_RDATA_ADDR28,
+    PWRAP_MD_ADC_RDATA_ADDR29,
+    PWRAP_MD_ADC_RDATA_ADDR30,
+    PWRAP_MD_ADC_RDATA_ADDR31,
+    PWRAP_INIT_DONE3,
+    PWRAP_MD_ADC_STA0,
+    PWRAP_MD_ADC_STA1,
+    PWRAP_MD_ADC_STA2,
+
 };
 
 static int mt2701_regs[] = {
@@ -521,6 +587,155 @@ static int mt2701_regs[] = {
 	[PWRAP_ADC_RDY_ADDR] =		0x14c,
 	[PWRAP_ADC_RDATA_ADDR1] =	0x150,
 	[PWRAP_ADC_RDATA_ADDR2] =	0x154,
+};
+static int mt6735_regs[] = {
+    [PWRAP_MUX_SEL]         =    0x0,
+    [PWRAP_WRAP_EN]         =    0x4,
+    [PWRAP_DIO_EN]          =    0x8,
+    [PWRAP_SIDLY]           =    0xC,
+    [PWRAP_RDDMY]           =    0x10,
+    [PWRAP_SI_CK_CON]       =    0x14,
+    [PWRAP_CSHEXT_WRITE]    =    0x18,
+    [PWRAP_CSHEXT_READ]     =    0x1C,
+    [PWRAP_CSLEXT_START]    =    0x20,
+    [PWRAP_CSLEXT_END]      =    0x24,
+    [PWRAP_STAUPD_PRD]      =    0x28,
+    [PWRAP_STAUPD_GRPEN]    =    0x2C,
+    [PWRAP_EINT_STA0_ADR]   =    0x30,
+    [PWRAP_EINT_STA1_ADR]   =    0x34,
+    [PWRAP_EINT_STA]        =    0x38,
+    [PWRAP_EINT_CLR]        =    0x3C,
+    [PWRAP_STAUPD_MAN_TRIG] =    0x40,
+    [PWRAP_STAUPD_STA]      =    0x44,
+    [PWRAP_WRAP_STA]        =    0x48,
+    [PWRAP_HARB_INIT]       =    0x4C,
+    [PWRAP_HARB_HPRIO]      =    0x50,
+    [PWRAP_HIPRIO_ARB_EN]   =    0x54,
+    [PWRAP_HARB_STA0]       =    0x58,
+    [PWRAP_HARB_STA1]       =    0x5C,
+    [PWRAP_MAN_EN]          =    0x60,
+    [PWRAP_MAN_CMD]         =    0x64,
+    [PWRAP_MAN_RDATA]       =    0x68,
+    [PWRAP_MAN_VLDCLR]      =    0x6C,
+    [PWRAP_WACS0_EN]        =    0x70,
+    [PWRAP_INIT_DONE0]      =    0x74,
+    [PWRAP_WACS0_CMD]       =    0x78,
+    [PWRAP_WACS0_RDATA]     =    0x7C,
+    [PWRAP_WACS0_VLDCLR]    =    0x80,
+    [PWRAP_WACS1_EN]        =    0x84,
+    [PWRAP_INIT_DONE1]      =    0x88,
+    [PWRAP_WACS1_CMD]       =    0x8C,
+    [PWRAP_WACS1_RDATA]     =    0x90,
+    [PWRAP_WACS1_VLDCLR]    =    0x94,
+    [PWRAP_WACS2_EN]        =    0x98,
+    [PWRAP_INIT_DONE2]      =    0x9C,
+    [PWRAP_WACS2_CMD]       =    0xA0,
+    [PWRAP_WACS2_RDATA]     =    0xA4,
+    [PWRAP_WACS2_VLDCLR]    =    0xA8,
+    [PWRAP_WACS3_EN]        =    0xAC,
+    [PWRAP_INIT_DONE3]      =    0xB0,
+    [PWRAP_WACS3_CMD]       =    0xB4,
+    [PWRAP_WACS3_RDATA]     =    0xB8,
+    [PWRAP_WACS3_VLDCLR]    =    0xBC,
+    [PWRAP_INT_EN]          =    0xC0,
+    [PWRAP_INT_FLG_RAW]     =    0xC4,
+    [PWRAP_INT_FLG]         =    0xC8,
+    [PWRAP_INT_CLR]         =    0xCC,
+    [PWRAP_SIG_ADR]         =    0xD0,
+    [PWRAP_SIG_MODE]        =    0xD4,
+    [PWRAP_SIG_VALUE]       =    0xD8,
+    [PWRAP_SIG_ERRVAL]      =    0xDC,
+    [PWRAP_CRC_EN]          =    0xE0,
+    [PWRAP_TIMER_EN]        =    0xE4,
+    [PWRAP_TIMER_STA]       =    0xE8,
+    [PWRAP_WDT_UNIT]        =    0xEC,
+    [PWRAP_WDT_SRC_EN]      =    0xF0,
+    [PWRAP_WDT_FLG]         =    0xF4,
+    [PWRAP_DEBUG_INT_SEL]   =    0xF8,
+    [PWRAP_DVFS_ADR0]       =    0xFC,
+    [PWRAP_DVFS_WDATA0]     =    0x100,
+    [PWRAP_DVFS_ADR1]       =    0x104,
+    [PWRAP_DVFS_WDATA1]     =    0x108,
+    [PWRAP_DVFS_ADR2]       =    0x10C,
+    [PWRAP_DVFS_WDATA2]     =    0x110,
+    [PWRAP_DVFS_ADR3]       =    0x114,
+    [PWRAP_DVFS_WDATA3]     =    0x118,
+    [PWRAP_DVFS_ADR4]       =    0x11C,
+    [PWRAP_DVFS_WDATA4]     =    0x120,
+    [PWRAP_DVFS_ADR5]       =    0x124,
+    [PWRAP_DVFS_WDATA5]     =    0x128,
+    [PWRAP_DVFS_ADR6]       =    0x12C,
+    [PWRAP_DVFS_WDATA6]     =    0x130,
+    [PWRAP_DVFS_ADR7]       =    0x134,
+    [PWRAP_DVFS_WDATA7]     =    0x138,
+    [PWRAP_DVFS_ADR8]       =    0x13C,
+    [PWRAP_DVFS_WDATA8]     =    0x140,
+    [PWRAP_DVFS_ADR9]       =    0x144,
+    [PWRAP_DVFS_WDATA9]     =    0x148,
+    [PWRAP_DVFS_ADR10]      =    0x14C,
+    [PWRAP_DVFS_WDATA10]    =    0x150,
+    [PWRAP_DVFS_ADR11]      =    0x154,
+    [PWRAP_DVFS_WDATA11]    =    0x158,
+    [PWRAP_DVFS_ADR12]      =    0x15C,
+    [PWRAP_DVFS_WDATA12]    =    0x160,
+    [PWRAP_DVFS_ADR13]      =    0x164,
+    [PWRAP_DVFS_WDATA13]    =    0x168,
+    [PWRAP_DVFS_ADR14]      =    0x16C,
+    [PWRAP_DVFS_WDATA14]    =    0x170,
+    [PWRAP_DVFS_ADR15]      =    0x174,
+    [PWRAP_DVFS_WDATA15]    =    0x178,
+    [PWRAP_SPMINF_STA]      =    0x17C,
+    [PWRAP_CIPHER_KEY_SEL]  =    0x180,
+    [PWRAP_CIPHER_IV_SEL]   =    0x184,
+    [PWRAP_CIPHER_EN]       =    0x188,
+    [PWRAP_CIPHER_RDY]      =    0x18C,
+    [PWRAP_CIPHER_MODE]     =    0x190,
+    [PWRAP_CIPHER_SWRST]    =    0x194,
+    [PWRAP_DCM_EN]          =    0x198,
+    [PWRAP_DCM_DBC_PRD]     =    0x19C,
+    [PWRAP_EXT_CK]          =    0x1A0,
+    [PWRAP_ADC_CMD_ADDR]    =    0x1A4,
+    [PWRAP_PWRAP_ADC_CMD]   =    0x1A8,
+    [PWRAP_ADC_RDATA_ADDR]  =    0x1AC,
+    [PWRAP_GPS_STA]         =    0x1B0,
+    [PWRAP_SW_RST]           =    0x1B4,
+    [PWRAP_MD_ADC_RDATA_ADDR_LATEST]  =   0x1B8,
+    [PWRAP_MD_ADC_RDATA_ADDR_WP]      =   0x1BC,
+    [PWRAP_MD_ADC_RDATA_ADDR0]        =   0x1C0,
+    [PWRAP_MD_ADC_RDATA_ADDR1]        =   0x1C4,
+    [PWRAP_MD_ADC_RDATA_ADDR2]        =   0x1C8,
+    [PWRAP_MD_ADC_RDATA_ADDR3]        =   0x1CC,
+    [PWRAP_MD_ADC_RDATA_ADDR4]        =   0x1D0,
+    [PWRAP_MD_ADC_RDATA_ADDR5]        =   0x1D4,
+    [PWRAP_MD_ADC_RDATA_ADDR6]        =   0x1D8,
+    [PWRAP_MD_ADC_RDATA_ADDR7]        =   0x1DC,
+    [PWRAP_MD_ADC_RDATA_ADDR8]        =   0x1E0,
+    [PWRAP_MD_ADC_RDATA_ADDR9]        =   0x1E4,
+    [PWRAP_MD_ADC_RDATA_ADDR10]       =   0x1E8,
+    [PWRAP_MD_ADC_RDATA_ADDR11]       =   0x1EC,
+    [PWRAP_MD_ADC_RDATA_ADDR12]       =   0x1F0,
+    [PWRAP_MD_ADC_RDATA_ADDR13]       =   0x1F4,
+    [PWRAP_MD_ADC_RDATA_ADDR14]       =   0x1F8,
+    [PWRAP_MD_ADC_RDATA_ADDR15]       =   0x1FC,
+    [PWRAP_MD_ADC_RDATA_ADDR16]       =   0x200,
+    [PWRAP_MD_ADC_RDATA_ADDR17]       =   0x204,
+    [PWRAP_MD_ADC_RDATA_ADDR18]       =   0x208,
+    [PWRAP_MD_ADC_RDATA_ADDR19]       =   0x20C,
+    [PWRAP_MD_ADC_RDATA_ADDR20]       =   0x210,
+    [PWRAP_MD_ADC_RDATA_ADDR21]       =   0x214,
+    [PWRAP_MD_ADC_RDATA_ADDR22]       =   0x218,
+    [PWRAP_MD_ADC_RDATA_ADDR23]       =   0x21C,
+    [PWRAP_MD_ADC_RDATA_ADDR24]       =   0x220,
+    [PWRAP_MD_ADC_RDATA_ADDR25]       =   0x224,
+    [PWRAP_MD_ADC_RDATA_ADDR26]       =   0x228,
+    [PWRAP_MD_ADC_RDATA_ADDR27]       =   0x22C,
+    [PWRAP_MD_ADC_RDATA_ADDR28]       =   0x230,
+    [PWRAP_MD_ADC_RDATA_ADDR29]       =   0x234,
+    [PWRAP_MD_ADC_RDATA_ADDR30]       =   0x238,
+    [PWRAP_MD_ADC_RDATA_ADDR31]       =   0x23C,
+    [PWRAP_MD_ADC_STA0]               =   0x240,
+    [PWRAP_MD_ADC_STA1]               =   0x244,
+    [PWRAP_MD_ADC_STA2]               =   0x248,
 };
 
 static int mt6765_regs[] = {
@@ -1032,6 +1247,7 @@ static int mt8516_regs[] = {
 
 enum pmic_type {
 	PMIC_MT6323,
+    PMIC_MT6328,
 	PMIC_MT6351,
 	PMIC_MT6357,
 	PMIC_MT6358,
@@ -1042,6 +1258,7 @@ enum pmic_type {
 
 enum pwrap_type {
 	PWRAP_MT2701,
+    PWRAP_MT6735,
 	PWRAP_MT6765,
 	PWRAP_MT6779,
 	PWRAP_MT6797,
@@ -1434,6 +1651,14 @@ static int pwrap_mt2701_init_reg_clock(struct pmic_wrapper *wrp)
 			    0x8);
 		pwrap_init_chip_select_ext(wrp, 5, 0, 2, 2);
 		break;
+
+    case PMIC_MT6328:
+		pwrap_writel(wrp, 0x88, PWRAP_RDDMY);
+		pwrap_write(wrp, wrp->slave->dew_regs[PWRAP_DEW_RDDMY_NO],
+			    0x8);
+		pwrap_init_chip_select_ext(wrp, 6, 0, 0, 0);
+		break;
+
 	default:
 		break;
 	}
@@ -1475,6 +1700,7 @@ static int pwrap_init_cipher(struct pmic_wrapper *wrp)
 		pwrap_writel(wrp, 1, PWRAP_CIPHER_START);
 		break;
 	case PWRAP_MT2701:
+    case PWRAP_MT6735:
 	case PWRAP_MT6765:
 	case PWRAP_MT6779:
 	case PWRAP_MT6797:
@@ -1503,6 +1729,7 @@ static int pwrap_init_cipher(struct pmic_wrapper *wrp)
 			    0x1);
 		break;
 	case PMIC_MT6323:
+    case PMIC_MT6328:
 	case PMIC_MT6351:
 	case PMIC_MT6357:
 		pwrap_write(wrp, wrp->slave->dew_regs[PWRAP_DEW_CIPHER_EN],
@@ -1623,12 +1850,56 @@ static int pwrap_mt2701_init_soc_specific(struct pmic_wrapper *wrp)
 		pwrap_writel(wrp, 0x072c, PWRAP_ADC_RDY_ADDR);
 		pwrap_writel(wrp, 0x072e, PWRAP_ADC_RDATA_ADDR1);
 		pwrap_writel(wrp, 0x0730, PWRAP_ADC_RDATA_ADDR2);
-		break;
+        break;
+
 	default:
 		break;
 	}
 
 	return 0;
+}
+
+static int pwrap_mt6735_init_soc_specific(struct pmic_wrapper *wrp)
+{
+        pwrap_writel(wrp, 0x0e90, PWRAP_ADC_CMD_ADDR);
+		pwrap_writel(wrp, 0x0100, PWRAP_PWRAP_ADC_CMD);
+        pwrap_writel(wrp, 1, PWRAP_WACS3_EN);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR_LATEST , MT6328_AUXADC_ADC32);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR_WP     , MT6328_AUXADC_MDBG_1);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR0       , MT6328_AUXADC_BUF0);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR1       , MT6328_AUXADC_BUF1);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR2       , MT6328_AUXADC_BUF2);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR3       , MT6328_AUXADC_BUF3);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR4       , MT6328_AUXADC_BUF4);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR5       , MT6328_AUXADC_BUF5);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR6       , MT6328_AUXADC_BUF6);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR7       , MT6328_AUXADC_BUF7);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR8       , MT6328_AUXADC_BUF8);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR9       , MT6328_AUXADC_BUF9);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR10      , MT6328_AUXADC_BUF10);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR11      , MT6328_AUXADC_BUF11);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR12      , MT6328_AUXADC_BUF12);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR13      , MT6328_AUXADC_BUF13);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR14      , MT6328_AUXADC_BUF14);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR15      , MT6328_AUXADC_BUF15);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR16      , MT6328_AUXADC_BUF16);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR17      , MT6328_AUXADC_BUF17);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR18      , MT6328_AUXADC_BUF18);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR19      , MT6328_AUXADC_BUF19);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR20      , MT6328_AUXADC_BUF20);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR21      , MT6328_AUXADC_BUF21);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR22      , MT6328_AUXADC_BUF22);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR23      , MT6328_AUXADC_BUF23);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR24      , MT6328_AUXADC_BUF24);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR25      , MT6328_AUXADC_BUF25);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR26      , MT6328_AUXADC_BUF26);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR27      , MT6328_AUXADC_BUF27);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR28      , MT6328_AUXADC_BUF28);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR29      , MT6328_AUXADC_BUF29);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR30      , MT6328_AUXADC_BUF30);
+        pwrap_writel(wrp, PWRAP_MD_ADC_RDATA_ADDR31      , MT6328_AUXADC_BUF31);
+
+        return 0;
 }
 
 static int pwrap_mt7622_init_soc_specific(struct pmic_wrapper *wrp)
@@ -1784,6 +2055,16 @@ static const struct pwrap_slv_type pmic_mt6323 = {
 	.pwrap_write = pwrap_write16,
 };
 
+static const struct pwrap_slv_type pmic_mt6328 = {
+	.dew_regs = mt6328_regs,
+	.type = PMIC_MT6328,
+	.regmap = &pwrap_regmap_config16,
+	.caps = PWRAP_SLV_CAP_SPI | PWRAP_SLV_CAP_DUALIO |
+		PWRAP_SLV_CAP_SECURITY,
+	.pwrap_read = pwrap_read16,
+	.pwrap_write = pwrap_write16,
+};
+
 static const struct pwrap_slv_type pmic_mt6351 = {
 	.dew_regs = mt6351_regs,
 	.type = PMIC_MT6351,
@@ -1865,6 +2146,9 @@ static const struct of_device_id of_slave_match_tbl[] = {
 		.compatible = "mediatek,mt6397",
 		.data = &pmic_mt6397,
 	}, {
+        .compatible = "mediatek,mt6328",
+        .data = &pmic_mt6328,
+    }, {
 		/* sentinel */
 	}
 };
@@ -1881,6 +2165,18 @@ static const struct pmic_wrapper_type pwrap_mt2701 = {
 	.caps = PWRAP_CAP_RESET | PWRAP_CAP_DCM,
 	.init_reg_clock = pwrap_mt2701_init_reg_clock,
 	.init_soc_specific = pwrap_mt2701_init_soc_specific,
+};
+
+static const struct pmic_wrapper_type pwrap_mt6735 = {
+	.regs = mt6735_regs,
+	.type = PWRAP_MT6735,
+	.arb_en_all = 0x3ff,
+	.int_en_all = 0xfffffbf9,
+	.spi_w = PWRAP_MAN_CMD_SPI_WRITE,
+	.wdt_src = PWRAP_WDT_SRC_MASK_ALL,
+	.caps = PWRAP_CAP_RESET | PWRAP_CAP_DCM,
+	.init_reg_clock = pwrap_mt2701_init_reg_clock,
+	.init_soc_specific = pwrap_mt6735_init_soc_specific,
 };
 
 static const struct pmic_wrapper_type pwrap_mt6765 = {
@@ -2014,6 +2310,9 @@ static const struct of_device_id of_pwrap_match_tbl[] = {
 		.compatible = "mediatek,mt8516-pwrap",
 		.data = &pwrap_mt8516,
 	}, {
+        .compatible = "mediatek,mt6735-pwrap",
+        .data = &pwrap_mt6735,
+    }, {
 		/* sentinel */
 	}
 };

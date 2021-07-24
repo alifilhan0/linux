@@ -11,5 +11,5 @@
 # GNU General Public License for more details.
 #
 
-obj-$(CONFIG_MTK_BOOT) += BOOT_COMMON.o
-BOOT_COMMON-$(CONFIG_MTK_BOOT) := mtk_boot_common.o mtk_boot.o
+obj-$(CONFIG_MTK_BOOT_REASON) += BOOT_REASON.o
+BOOT_REASON-$(CONFIG_MTK_BOOT_REASON) := mtk_boot_reason.o

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 MediaTek Inc.
+# Copyright (C) 2016 MediaTek Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -11,5 +11,7 @@
 # GNU General Public License for more details.
 #
 
-obj-$(CONFIG_MTK_BOOT) += BOOT_COMMON.o
-BOOT_COMMON-$(CONFIG_MTK_BOOT) := mtk_boot_common.o mtk_boot.o
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/
+
+obj-y += mt_clkbuf_ctl.o
+
