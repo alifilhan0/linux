@@ -581,6 +581,9 @@ static s32 mtk_dsi_switch_to_cmd_mode(struct mtk_dsi *dsi, u8 irq_flag, u32 t)
 	mtk_dsi_irq_data_clear(dsi, irq_flag);
 	mtk_dsi_set_cmd_mode(dsi);
 
+    /* Start DSI engine to initiate mode switch */
+    mtk_dsi_start(dsi);
+
 	if (!mtk_dsi_wait_for_irq_done(dsi, irq_flag, t)) {
 		DRM_ERROR("failed to switch cmd mode\n");
 		return -ETIME;
@@ -669,7 +672,6 @@ static void mtk_dsi_poweroff(struct mtk_dsi *dsi)
 	 */
 	mtk_dsi_stop(dsi);
 
-	mtk_dsi_switch_to_cmd_mode(dsi, VM_DONE_INT_FLAG, 500);
 	mtk_dsi_reset_engine(dsi);
 	mtk_dsi_lane0_ulp_mode_enter(dsi);
 	mtk_dsi_clk_ulp_mode_enter(dsi);
@@ -1032,9 +1034,13 @@ static ssize_t mtk_dsi_host_transfer(struct mipi_dsi_host *host,
 	dsi_mode = readl(dsi->regs + DSI_MODE_CTRL);
 	if (dsi_mode & MODE) {
 		mtk_dsi_stop(dsi);
-		ret = mtk_dsi_switch_to_cmd_mode(dsi, VM_DONE_INT_FLAG, 500);
+        ret = mtk_dsi_switch_to_cmd_mode(dsi, CMD_DONE_INT_FLAG |
+                                 VM_DONE_INT_FLAG, 500);
 		if (ret)
 			goto restore_dsi_mode;
+
+        mtk_dsi_stop(dsi);
+
 	}
 
 	if (MTK_DSI_HOST_IS_READ(msg->type))
@@ -1046,10 +1052,9 @@ static ssize_t mtk_dsi_host_transfer(struct mipi_dsi_host *host,
 	if (ret)
 		goto restore_dsi_mode;
 
-	if (!MTK_DSI_HOST_IS_READ(msg->type)) {
-		recv_cnt = 0;
-		goto restore_dsi_mode;
-	}
+    if (!MTK_DSI_HOST_IS_READ(msg->type))
+            return 0;
+
 
 	if (!msg->rx_buf) {
 		DRM_ERROR("dsi receive buffer size may be NULL\n");
@@ -1079,13 +1084,15 @@ static ssize_t mtk_dsi_host_transfer(struct mipi_dsi_host *host,
 	DRM_INFO("dsi get %d byte data from the panel address(0x%x)\n",
 		 recv_cnt, *((u8 *)(msg->tx_buf)));
 
+    return recv_cnt;
+    
 restore_dsi_mode:
 	if (dsi_mode & MODE) {
 		mtk_dsi_set_mode(dsi);
 		mtk_dsi_start(dsi);
 	}
 
-	return ret < 0 ? ret : recv_cnt;
+	return ret;
 }
 
 static const struct mipi_dsi_host_ops mtk_dsi_ops = {
@@ -1197,6 +1204,7 @@ static const struct mtk_dsi_driver_data mt8188_dsi_driver_data = {
 
 static const struct of_device_id mtk_dsi_of_match[] = {
 	{ .compatible = "mediatek,mt2701-dsi", .data = &mt2701_dsi_driver_data },
+    { .compatible = "mediatek,mt6735-dsi", .data = &mt8173_dsi_driver_data },
 	{ .compatible = "mediatek,mt8173-dsi", .data = &mt8173_dsi_driver_data },
 	{ .compatible = "mediatek,mt8183-dsi", .data = &mt8183_dsi_driver_data },
 	{ .compatible = "mediatek,mt8186-dsi", .data = &mt8186_dsi_driver_data },
