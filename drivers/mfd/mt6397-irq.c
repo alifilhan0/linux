@@ -34,10 +34,10 @@ static void mt6397_irq_sync_unlock(struct irq_data *data)
 	regmap_write(mt6397->regmap, mt6397->int_con[1],
 		     mt6397->irq_masks_cur[1]);
 
-    if (mt6397->int_con[2])
+    if (mt6397->int_con[2]) {
         regmap_write(mt6397->regmap, mt6397->int_con[2],
-                 mt6397->irq_masks_cur[2]);
-
+                     mt6397->irq_masks_cur[2]);
+    }
 	mutex_unlock(&mt6397->irqlock);
 }
 
@@ -112,9 +112,9 @@ static irqreturn_t mt6397_irq_thread(int irq, void *data)
 	mt6397_irq_handle_reg(mt6397, mt6397->int_status[0], 0);
 	mt6397_irq_handle_reg(mt6397, mt6397->int_status[1], 16);
 
-    if (mt6397->int_status[2])
+    if (mt6397->int_status[2]) {
         mt6397_irq_handle_reg(mt6397, mt6397->int_status[2], 32);
-
+    }
 	return IRQ_HANDLED;
 }
 
@@ -160,9 +160,10 @@ static int mt6397_irq_pm_notifier(struct notifier_block *notifier,
 		regmap_write(chip->regmap,
 			     chip->int_con[1], chip->irq_masks_cur[1]);
 
-        if (chip->int_con[2])
+        if (chip->int_con[2]) {
                 regmap_write(chip->regmap,
                              chip->int_con[2], chip->irq_masks_cur[2]);
+            }
 		disable_irq_wake(chip->irq);
 		break;
 
