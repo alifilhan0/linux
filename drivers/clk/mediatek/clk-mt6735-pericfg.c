@@ -78,7 +78,7 @@ static const struct of_device_id of_match_mt6735_pericfg[] = {
 
 static struct platform_driver clk_mt6735_pericfg = {
 	.probe = mtk_clk_simple_probe,
-	.remove = mtk_clk_simple_remove,
+	.remove_new = mtk_clk_simple_remove,
 	.driver = {
 		.name = "clk-mt6735-pericfg",
 		.of_match_table = of_match_mt6735_pericfg,

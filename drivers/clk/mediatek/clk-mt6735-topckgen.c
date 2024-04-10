@@ -363,14 +363,14 @@ static const struct mtk_mux topckgen_muxes[] = {
 	MUX_GATE_CLR_SET_UPD(DISPPWM_SEL, "disppwm_sel", disppwm_sel_parents, CLK_CFG_7, CLK_CFG_7_SET, CLK_CFG_7_CLR, 0, 2, 7, 0, 0),
 };
 
-int clk_mt6735_topckgen_probe(struct platform_device *pdev)
+static int clk_mt6735_topckgen_probe(struct platform_device *pdev)
 {
 	void __iomem *base;
-	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+    struct device_node *node = pdev->dev.of_node;
 	struct clk_hw_onecell_data *clk_data;
 	int ret;
 
-	base = devm_ioremap_resource(&pdev->dev, res);
+	base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 
@@ -397,8 +397,8 @@ int clk_mt6735_topckgen_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = mtk_clk_register_muxes(topckgen_muxes, ARRAY_SIZE(topckgen_muxes),
-				     pdev->dev.of_node, &mt6735_topckgen_lock,
+	ret = mtk_clk_register_muxes(&pdev->dev, topckgen_muxes, ARRAY_SIZE(topckgen_muxes),
+				     node, &mt6735_topckgen_lock,
 				     clk_data);
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to register muxes: %d\n", ret);
@@ -414,7 +414,7 @@ int clk_mt6735_topckgen_probe(struct platform_device *pdev)
 	return ret;
 }
 
-int clk_mt6735_topckgen_remove(struct platform_device *pdev)
+static void clk_mt6735_topckgen_remove(struct platform_device *pdev)
 {
 	struct clk_hw_onecell_data *clk_data = platform_get_drvdata(pdev);
 
@@ -426,8 +426,6 @@ int clk_mt6735_topckgen_remove(struct platform_device *pdev)
 				      ARRAY_SIZE(topckgen_fixed_clks),
 				      clk_data);
 	mtk_free_clk_data(clk_data);
-
-	return 0;
 }
 
 static const struct of_device_id of_match_mt6735_topckgen[] = {
@@ -437,7 +435,7 @@ static const struct of_device_id of_match_mt6735_topckgen[] = {
 
 static struct platform_driver clk_mt6735_topckgen = {
 	.probe = clk_mt6735_topckgen_probe,
-	.remove = clk_mt6735_topckgen_remove,
+	.remove_new = clk_mt6735_topckgen_remove,
 	.driver = {
 		.name = "clk-mt6735-topckgen",
 		.of_match_table = of_match_mt6735_topckgen,

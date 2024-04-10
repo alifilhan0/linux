@@ -62,41 +62,21 @@ static const struct mtk_clk_desc mmsys_clks = {
 	.num_clks = ARRAY_SIZE(mmsys_gates),
 };
 
-static int clk_mt6735_mm_probe(struct platform_device *pdev)
-{
-	struct device *dev = &pdev->dev;
-	struct device_node *node = dev->parent->of_node;
-	struct clk_hw_onecell_data *clk_data;
-	int ret;
-
-	clk_data = mtk_alloc_clk_data(mmsys_clks.num_clks);
-
-	ret = mtk_clk_register_gates_with_dev(node, mmsys_gates,
-					mmsys_clks.num_clks, clk_data,
-					dev);
-	if (ret)
-		return ret;
-
-	return of_clk_add_hw_provider(node, of_clk_hw_onecell_get, clk_data);
-}
-
-static int clk_mt6735_mm_remove(struct platform_device *pdev)
-{
-	struct clk_hw_onecell_data *clk_data = platform_get_drvdata(pdev);
-	struct device_node *node = pdev->dev.of_node;
-
-	of_clk_del_provider(node);
-	mtk_clk_unregister_gates(mmsys_clks.clks, mmsys_clks.num_clks, clk_data);
-	mtk_free_clk_data(clk_data);
-
-	return 0;
-}
+static const struct of_device_id of_match_clk_mt6735_mm[] = {
+    {
+        .compatible = "mediatek,mt6735-mmsys",
+        .data = &mmsys_clks,
+    }, {
+        /* sentinel */
+    }
+};
 
 static struct platform_driver clk_mt6735_mm = {
-	.probe = clk_mt6735_mm_probe,
-	.remove = clk_mt6735_mm_remove,
+	.probe = mtk_clk_simple_probe,
+	.remove_new = mtk_clk_simple_remove,
 	.driver = {
 		.name = "clk-mt6735-mm",
+        .of_match_table = of_match_clk_mt6735_mm,
 	},
 };
 module_platform_driver(clk_mt6735_mm);

@@ -19,8 +19,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt6735[] = {
 		.pwr_sta2nd_offs = SPM_PWR_STATUS_2ND,
 		.sram_pdn_bits = GENMASK(8, 8),
 		.sram_pdn_ack_bits = 0,
-		.bp_infracfg = {
-			BUS_PROT_UPDATE_TOPAXI(MT6735_TOP_AXI_PROT_EN_MD1),
+		.bp_cfg = {
+            BUS_PROT_INFRA_UPDATE_TOPAXI(MT6735_TOP_AXI_PROT_EN_MD1),
 		},
 	},
 	[MT6735_POWER_DOMAIN_CONN] = {
@@ -31,8 +31,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt6735[] = {
 		.pwr_sta2nd_offs = SPM_PWR_STATUS_2ND,
 		.sram_pdn_bits = GENMASK(8, 8),
 		.sram_pdn_ack_bits = 0,
-		.bp_infracfg = {
-			BUS_PROT_UPDATE_TOPAXI(MT6735_TOP_AXI_PROT_EN_CONN),
+		.bp_cfg = {
+            BUS_PROT_INFRA_UPDATE_TOPAXI(MT6735_TOP_AXI_PROT_EN_CONN),
 		},
 	},
 	[MT6735_POWER_DOMAIN_DIS] = {
@@ -43,8 +43,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt6735[] = {
 		.pwr_sta2nd_offs = SPM_PWR_STATUS_2ND,
 		.sram_pdn_bits = GENMASK(11, 8),
 		.sram_pdn_ack_bits = GENMASK(12, 12),
-		.bp_infracfg = {
-			BUS_PROT_UPDATE_TOPAXI(MT8173_TOP_AXI_PROT_EN_MM_M0),
+		.bp_cfg = {
+            BUS_PROT_INFRA_UPDATE_TOPAXI(MT8173_TOP_AXI_PROT_EN_MM_M0),
 		},
 	},
 	[MT6735_POWER_DOMAIN_MFG] = {
@@ -55,8 +55,8 @@ static const struct scpsys_domain_data scpsys_domain_data_mt6735[] = {
 		.pwr_sta2nd_offs = SPM_PWR_STATUS_2ND,
 		.sram_pdn_bits = GENMASK(11, 8),
 		.sram_pdn_ack_bits = GENMASK(12, 12),
-		.bp_infracfg = {
-			BUS_PROT_UPDATE_TOPAXI(MT8173_TOP_AXI_PROT_EN_MFG_S),
+		.bp_cfg = {
+            BUS_PROT_INFRA_UPDATE_TOPAXI(MT8173_TOP_AXI_PROT_EN_MFG_S),
 		},
 	},
 	[MT6735_POWER_DOMAIN_ISP] = {

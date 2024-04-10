@@ -1,5 +1,20 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+
+#if defined(__GNU__)
 #include <byteswap.h>
+#elif defined(__APPLE__)
+#include <libkern/OSByteOrder.h>
+
+/* We assume little endian. */
+#  define htobe64(x) OSSwapHostToBigInt64(x)
+#  define htobe32(x) OSSwapHostToBigInt32(x)
+#  define htobe16(x) OSSwapHostToBigInt16(x)
+
+#  define be64toh(x) OSSwapBigToHostInt64(x)
+#  define be32toh(x) OSSwapBigToHostInt32(x)
+#  define be16toh(x) OSSwapBigToHostInt16(x)
+#endif
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

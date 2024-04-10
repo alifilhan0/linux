@@ -71,10 +71,10 @@ static const unsigned int mt2701_mtk_ddp_ext[] = {
 	DDP_COMPONENT_DPI0,
 };
 
-static const enum unsigned int mt6735_mtk_ddp_main[] = {
+static const unsigned int mt6735_mtk_ddp_main[] = {
     DDP_COMPONENT_OVL0,
     DDP_COMPONENT_COLOR0,
-    DDP_COMPONENT_DITHER,
+    DDP_COMPONENT_DITHER0,
     DDP_COMPONENT_RDMA0,
     DDP_COMPONENT_DSI0,
 };

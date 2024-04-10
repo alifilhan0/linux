@@ -31,6 +31,10 @@ typedef Elf64_Addr	kernel_ulong_t;
 #include <ctype.h>
 #include <stdbool.h>
 
+#ifdef __APPLE__
+#define uuid_t compat_uuid_t
+#endif
+
 typedef uint32_t	__u32;
 typedef uint16_t	__u16;
 typedef unsigned char	__u8;

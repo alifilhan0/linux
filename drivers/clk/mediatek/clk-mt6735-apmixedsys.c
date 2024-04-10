@@ -77,7 +77,7 @@ static const struct mtk_pll_data apmixedsys_plls[] = {
 	PLL(APLL2, "apll2", APLL2_CON0, APLL2_PWR_CON0, 0x00000001, 0, APLL2_CON0, 4, APLL2_CON2, AP_PLL_CON_5, 1, APLL2_CON1, 31, 0)
 };
 
-int clk_mt6735_apmixed_probe(struct platform_device *pdev)
+static int clk_mt6735_apmixed_probe(struct platform_device *pdev)
 {
 	void __iomem *base;
 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -109,7 +109,7 @@ int clk_mt6735_apmixed_probe(struct platform_device *pdev)
 	return ret;
 }
 
-int clk_mt6735_apmixed_remove(struct platform_device *pdev)
+static int clk_mt6735_apmixed_remove(struct platform_device *pdev)
 {
 	struct clk_hw_onecell_data *clk_data = platform_get_drvdata(pdev);
 
